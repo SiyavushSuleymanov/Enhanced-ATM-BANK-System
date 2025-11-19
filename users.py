@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 with open("userslist.json", "r") as f:
@@ -18,14 +19,35 @@ class BankAccount:
     def show_balance(self):
         return self.balance
 
-    def transaction(self, trnsct, amount):
-        self.trnsct_list.append(trnsct)
-        self.balance -= amount
-        return f"Transaction successful! Your current balance is {self.balance}"
-
     def updt_balance(self, amount):
         self.balance += amount
-        return f"Balance updated successfully! Your current balance is {self.balance}"
+        self.trnsct_list.append(f"{recvr} - {trsmoney} - {datetime.now()} - updated")
+        print(f"{self.username}'s balance updated successfully! {self.username}'s current balance is {self.balance}")
+        return f"{recvr} - {trsmoney} - {datetime.now():.2f} - updated"
+
+    def transfer_money(self, recvr, trsmoney):
+        if trsmoney > self.balance:
+            return "You don't have enough balance for this operation!"
+        else:
+            self.balance -= trsmoney
+            self.trnsct_list.append(f"{recvr} - {trsmoney} - {datetime.now()} - taken out")
+            return f"{self.username}'s transaction successful! {self.username}'s current balance is {self.balance}"
+
+    def deposit_money(self, amount):
+        self.balance += amount
+        print(f"Your current balance is {self.balance} AZN")
+        self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now()}")
+        return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))}"
+
+    def withdraw_money(self, amount):
+        print(f"Your current balance is {self.balance} AZN")
+        if amount > self.balance:
+            return "Your balance is low"
+        else:
+            print("Operation was done succesfully")
+            self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
+            return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
+
 
 usr = input("Enter name: ")
 usr = usr.capitalize()
@@ -40,6 +62,23 @@ for i in range(len(users)):
         break
     elif i == len(users)-1:
         print("User not found!")
+
+amount = float(input("Enter the amount of money: "))
+print(usr.deposit_money(amount))
+
+recvr = input("Enter receiver's name you want to transfer money to: ").capitalize()
+for i in range(len(users)):
+    if recvr == users[i]["name"]:
+        recvr = BankAccount(users[i]["name"], users[i]["pin"], users[i]["balance"], users[i]["transactions"])
+        trsmoney = float(input("Enter the amount of money you want to transfer: "))
+        print(usr.transfer_money(recvr, trsmoney))
+        print(recvr.updt_balance(trsmoney))
+        break
+    elif i == len(users) - 1:
+        print("User not found!")
+
+withdrawed_money = float(input("Enter money you want to get: "))
+print(usr.withdraw_money(withdrawed_money))
 
 
 
