@@ -21,22 +21,22 @@ class App(tk.Tk):
 class LoginPage(Frame):
     #from users import users, pins  #not available
     def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
+        Frame.__init__(self, parent, bg='light blue')
         self.controller = controller
 
-        # --- Card Number ---
+
         card_label = tk.Label(self, text="Card Number:")
         card_label.grid(row=0, column=0, pady=(120, 10), padx=20)
         self.card_entry = tk.Entry(self)
         self.card_entry.grid(row=0, column=1, pady=(120, 10))
 
-        # --- PIN ---
+
         pin_label = tk.Label(self, text="PIN:")
         pin_label.grid(row=1, column=0, pady=10, padx=20)
         self.pin_entry = tk.Entry(self, show="*")
         self.pin_entry.grid(row=1, column=1, pady=10)
 
-        # --- CVC ---
+
         cvc_label = tk.Label(self, text="CVC:")
         cvc_label.grid(row=2, column=0, pady=10, padx=20)
         self.cvc_entry = tk.Entry(self, show="*")
