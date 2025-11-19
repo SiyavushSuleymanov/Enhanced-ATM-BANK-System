@@ -19,7 +19,7 @@ class App(tk.Tk):
         frame.tkraise()
 
 class LoginPage(Frame):
-    #from users import users, pins  #not available sdsdhsdsdhsghvvbn
+    #from users import users, pins  #not available sdsdhsdsdhsghvvbnhghjkjhghj
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
