@@ -22,23 +22,23 @@ class BankAccount:
 
     def updt_balance(self, amount):
         self.balance += amount
-        self.trnsct_list.append(f"{self.username} - {trsmoney} - {datetime.now()} - updated")
+        self.trnsct_list.append(f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated")
         print(f"{self.username}'s balance updated successfully! {self.username}'s current balance is {self.balance}")
-        return f"{self.username} - {trsmoney} - {datetime.now():.2f} - updated"
+        return f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated"
 
     def transfer_money(self, recvr, trsmoney):
         if trsmoney > self.balance:
             return "You don't have enough balance for this operation!"
         else:
             self.balance -= trsmoney
-            self.trnsct_list.append(f"{recvr} - {trsmoney} - {datetime.now()} - taken out")
+            self.trnsct_list.append(f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
             print(f"{self.username}'s transaction successful! {self.username}'s current balance is {self.balance}")
-            return f"{recvr} - {trsmoney} - {datetime.now()} - taken out"
+            return f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
 
     def deposit_money(self, amount):
         self.balance += amount
         print(f"Your current balance is {self.balance} AZN")
-        self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now()} - updated")
+        self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated")
         return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated"
 
     def withdraw_money(self, amount):
@@ -51,7 +51,9 @@ class BankAccount:
             return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
 
     def transaction(self):
-        return self.trnsct_list
+        for tr in self.trnsct_list[:-1]:
+            print(tr)
+        return self.trnsct_list[-1]
 
     def exit(self):
         print("Succeefully finished!")
@@ -92,9 +94,6 @@ for i in range(len(users)):
 #WITHDRAWING
 withdrawed_money = float(input("Enter money you want to get: "))
 print(usr.withdraw_money(withdrawed_money))
+
+print(usr.transaction())
 '''
-
-
-
-
-
