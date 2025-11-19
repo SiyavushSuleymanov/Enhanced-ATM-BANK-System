@@ -99,20 +99,16 @@ class MainMenu(Frame):
         self.update_balance_button.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
         # --- Other main menu buttons ---
-        self.deposit_button = tk.Button(self, text="Deposit", width=12,
-                                        command=lambda: controller.show_frame("DepositPage"))
+        self.deposit_button = tk.Button(self, text="Deposit", width=12,command=lambda: controller.show_frame("DepositPage"))
         self.deposit_button.grid(row=2, column=0, pady=10, padx=20)
 
-        self.withdraw_button = tk.Button(self, text="Withdraw", width=12,
-                                         command=lambda: controller.show_frame("WithdrawPage"))
+        self.withdraw_button = tk.Button(self, text="Withdraw", width=12,command=lambda: controller.show_frame("WithdrawPage"))
         self.withdraw_button.grid(row=3, column=0, pady=10, padx=20)
 
-        self.transfer_button = tk.Button(self, text="Transfer", width=12,
-                                         command=lambda: controller.show_frame("TransferPage"))
+        self.transfer_button = tk.Button(self, text="Transfer", width=12, command=lambda: controller.show_frame("TransferPage"))
         self.transfer_button.grid(row=4, column=0, pady=10, padx=20)
 
-        self.history_button = tk.Button(self, text="History", width=12,
-                                        command=lambda: controller.show_frame("HistoryPage"))
+        self.history_button = tk.Button(self, text="History", width=12, command=lambda: controller.show_frame("HistoryPage"))
         self.history_button.grid(row=5, column=0, pady=10, padx=20)
 
         self.logout_button = tk.Button(self, text="Logout", width=12, command=self.logout)
