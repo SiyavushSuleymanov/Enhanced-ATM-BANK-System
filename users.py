@@ -52,7 +52,7 @@ class BankAccount:
     def exit(self):
         print("Succeefully finished!")
         sys.exit()
-
+'''
 #LOGIN
 usr = input("Enter name: ")
 usr = usr.capitalize()
@@ -88,3 +88,4 @@ for i in range(len(users)):
 withdrawed_money = float(input("Enter money you want to get: "))
 print(usr.withdraw_money(withdrawed_money))
 
+'''

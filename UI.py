@@ -21,8 +21,6 @@ class App(tk.Tk):
         self.show_frame("LoginPage")
     def show_frame(self,page_name):
         frame = self.frames[page_name]
-        if page_name == "MainMenu":
-            frame.update_page()
         frame.tkraise()
 
 class LoginPage(Frame):
@@ -87,16 +85,7 @@ class MainMenu(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        self.current_user_label = tk.Label(self, text="", font=("Arial", 14))
-        self.current_user_label.pack(anchor="nw", padx=20, pady=10)
 
-        self.balance_label = tk.Label(self, text="", font=("Arial", 12))
-        self.balance_label.pack(anchor="nw", padx=20)
-
-    def update_page(self):
-        user = self.controller.current_user
-        self.current_user_label.config(text=f"Welcome, {user["name"]}")
-        self.balance_label.config(text=f"Balance: ${user["balance"]}")
 class DepositPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
