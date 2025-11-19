@@ -48,7 +48,11 @@ class BankAccount:
             print("Operation was done succesfully")
             self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
             return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
-'''
+
+    def exit(self):
+        print("Succeefully finished!")
+        sys.exit()
+
 #LOGIN
 usr = input("Enter name: ")
 usr = usr.capitalize()
@@ -83,4 +87,4 @@ for i in range(len(users)):
 #WITHDRAWING
 withdrawed_money = float(input("Enter money you want to get: "))
 print(usr.withdraw_money(withdrawed_money))
-'''
+
