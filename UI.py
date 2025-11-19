@@ -19,7 +19,7 @@ class App(tk.Tk):
         frame.tkraise()
 
 class LoginPage(Frame):
-    #from users import users, pins  #not available sdsdhsdsdhsghvvbnhghjkjhghj
+    #from users import users, pins  #not available
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
@@ -27,7 +27,6 @@ class LoginPage(Frame):
         login_button.grid(row=2, column=0)   #edit it
     def login_user(self):
         pass
-    hbcxcxcxcxhbcxbchx
 class MainMenu(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
