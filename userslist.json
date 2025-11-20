@@ -3,7 +3,7 @@
     {
       "name": "Akbar",
       "pin": 4321,
-      "balance": 1500,
+      "balance": 3150.0,
       "transactions": []
     },
     {
@@ -15,7 +15,7 @@
     {
       "name": "Kenan",
       "pin": 9876,
-      "balance": 2500,
+      "balance": 3750.0,
       "transactions": []
     },
     {
@@ -27,7 +27,7 @@
     {
       "name": "Turab",
       "pin": 1122,
-      "balance": 1250,
+      "balance": 6750.0,
       "transactions": []
     }
   ]

@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 from tkinter import Frame
-from users import BankAccount, users
+from transaction import BankAccount, users
 
 
 class App(tk.Tk):
@@ -32,85 +32,39 @@ class LoginPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        for i in range(20):
+        self.grid_rowconfigure(0, weight=1)
+        for i in range(10):
             self.grid_rowconfigure(i, weight=1)
-        for j in range(20):
+        for j in range(10):
             self.grid_columnconfigure(j, weight=1)
-        entered_username = tk.Label(self, text="Username:")
-        entered_username.grid(row=2, column=6, pady=10, padx=20)
-        self.usr = tk.Entry(self)
-        self.usr.grid(row=2, column=7, pady=10)
-        pin = tk.Label(self, text="PIN:")
-        pin.grid(row=3, column=6, pady=10, padx=20)
-        self.entered_pin = tk.Entry(self, show="*")
-        self.entered_pin.grid(row=3, column=7, pady=10)
-        login_button = tk.Button(self, text="Login", command=self.login_user, width=12, height=1)
-        login_button.grid(row=4, column=7, columnspan=2, pady=30)
-
-
-
+        entered_username = tk.Label(self, text="Username:", font=("Arial", 24, "bold"), bg="#f0f0f0")
+        entered_username.grid(row=3, column=1, columnspan=4, sticky="e", padx=10, pady=10)
+        self.usr = tk.Entry(self, font=("Arial", 24))
+        self.usr.grid(row=3, column=5, columnspan=4, sticky="w", padx=10, pady=10)
+        pin = tk.Label(self, text="PIN:", font=("Arial", 24, "bold"), bg="#f0f0f0")
+        pin.grid(row=4, column=1, columnspan=4, sticky="e", padx=10, pady=10)
+        self.entered_pin = tk.Entry(self, font=("Arial", 24), show="*")
+        self.entered_pin.grid(row=4, column=5, columnspan=4, sticky="w", padx=10, pady=10)
+        login_button = tk.Button(self, text="Login", command=self.login_user,font=("Arial", 24, "bold"), width=15, height=2)
+        login_button.grid(row=5, column=1, columnspan=8, pady=30)
     def login_user(self):
-        from users import users
+        from transaction import users
         usr = self.usr.get().capitalize()
         pin = int(self.entered_pin.get())
-        current_user_ind = None
-        for i in range(len(users)-1):
-            if usr == users[i]["name"]:
-                usr = BankAccount(users[i]["name"], users[i]["pin"], users[i]["balance"], users[i]["transactions"])
+        for current_user_ind in range(len(users)):
+            if usr == users[current_user_ind]["name"]:
+                usr = BankAccount(users[current_user_ind]["name"], users[current_user_ind]["pin"], users[current_user_ind]["balance"], users[current_user_ind]["transactions"])
                 self.current_user_ind = current_user_ind
-                if pin == users[i]["pin"]:
+                if pin == users[current_user_ind]["pin"]:
                     self.controller.current_user = usr
                     self.controller.show_frame("MainMenu")
                 else:
                     passwd_error = tk.Label(self, text="Incorrect PIN", fg="red")
                     passwd_error.grid(row=5, column=7, columnspan=2, pady=10)
                 break
-            elif i == len(users) - 1:
+            elif current_user_ind == len(users) - 1:
                 self.controller.current_user = None
                 self.controller.show_frame("LoginPage")
-
-
-
-
-class MainMenu(Frame):
-    def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
-        self.controller = controller
-        self.current_user_label = tk.Label(self, text="", font=("Arial", 14, "bold"))
-        self.current_user_label.grid(row=0, column=0, padx=20, pady=10, sticky="w")
-        self.balance_label = tk.Label(self, text="", font=("Arial", 12))
-        self.balance_label.grid(row=1, column=0, padx=20, pady=5, sticky="w")
-        self.update_balance_button = tk.Button(self, text="Show Balance", command=self.show_balance_func)
-        self.update_balance_button.grid(row=1, column=1, padx=10, pady=5, sticky="w")
-        self.deposit_button = tk.Button(self, text="Deposit", width=12,command=lambda: controller.show_frame("DepositPage"))
-        self.deposit_button.grid(row=2, column=0, pady=10, padx=20)
-        self.withdraw_button = tk.Button(self, text="Withdraw", width=12,command=lambda: controller.show_frame("WithdrawPage"))
-        self.withdraw_button.grid(row=3, column=0, pady=10, padx=20)
-        self.transfer_button = tk.Button(self, text="Transfer", width=12, command=lambda: controller.show_frame("TransferPage"))
-        self.transfer_button.grid(row=4, column=0, pady=10, padx=20)
-        self.history_button = tk.Button(self, text="History", width=12, command=lambda: controller.show_frame("HistoryPage"))
-        self.history_button.grid(row=5, column=0, pady=10, padx=20)
-        self.logout_button = tk.Button(self, text="Logout", width=12, command=self.logout)
-        self.logout_button.grid(row=6, column=0, pady=10, padx=20)
-
-
-
-
-    def update_page(self):
-        user = self.controller.current_user
-        if user:
-            self.current_user_label.config(text=f"Welcome, {user.username}")
-            self.balance_label.config(text=f"Balance: $******")
-        else:
-            self.current_user_label.config(text="Welcome, Guest")
-            self.balance_label.config(text="Balance: $0")
-
-
-
-    def show_balance_func(self):
-        user = self.controller.current_user
-        self.balance_label.config(text=f"Balance: ${user.balance}")
-
 
 
     def logout(self):
@@ -119,13 +73,49 @@ class MainMenu(Frame):
 
 
 
+class MainMenu(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.configure(bg="#f0f0f0")
+        self.grid_rowconfigure(0, weight=1)
+        for i in range(10):
+            self.grid_rowconfigure(i, weight=1)
+        for j in range(3):
+            self.grid_columnconfigure(j, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=2)
+        self.current_user_label = tk.Label(self, text="", font=("Arial", 40, "bold"), bg="#f0f0f0")
+        self.current_user_label.grid(row=0, column=0, columnspan=3, pady=20, sticky="n")
+        button_font = ("Arial", 24, "bold")
+        button_width = 15
+        button_height = 2
+        self.deposit_button = tk.Button(self, text="Deposit", width=button_width, height=button_height,font=button_font, command=lambda: controller.show_frame("DepositPage"))
+        self.deposit_button.grid(row=2, column=1, pady=10, padx=20, sticky="w")
+        self.withdraw_button = tk.Button(self, text="Withdraw", width=button_width, height=button_height,font=button_font, command=lambda: controller.show_frame("WithdrawPage"))
+        self.withdraw_button.grid(row=3, column=1, pady=10, padx=20, sticky="w")
+        self.transfer_button = tk.Button(self, text="Transfer", width=button_width, height=button_height,font=button_font, command=lambda: controller.show_frame("TransferPage"))
+        self.transfer_button.grid(row=2, column=1, pady=10, padx=20, sticky="e")
+        self.history_button = tk.Button(self, text="History", width=button_width, height=button_height,font=button_font, command=lambda: controller.show_frame("HistoryPage"))
+        self.history_button.grid(row=3, column=1, pady=10, padx=20, sticky="e")
+        self.logout_button = tk.Button(self, text="Logout", width=button_width, height=button_height, font=button_font, command=self.logout)
+        self.logout_button.grid(row=6, column=1, columnspan=3, pady=20, sticky="w")
+
+    def update_page(self):
+        user = self.controller.current_user
+        if user:
+            self.current_user_label.config(text=f"Welcome, {user.username}")
+        else:
+            self.current_user_label.config(text="Welcome, Guest")
+
+    def logout(self):
+        self.controller.current_user = None
+        self.controller.show_frame("LoginPage")
 
 class DepositPage(Frame):
     def __init__(self, parent, controller):
-        from users import BankAccount
         Frame.__init__(self, parent)
         self.controller = controller
-
         self.current_user_label = tk.Label(self, text="", font=("Arial", 14, "bold"))
         self.current_user_label.grid(row=0, column=0, padx=20, pady=10, sticky="w")
         self.balance_label = tk.Label(self, text="", font=("Arial", 12))
@@ -151,12 +141,11 @@ class DepositPage(Frame):
     def update_page(self):
         user = self.controller.current_user
         if user:
-            from users import users
+            from transaction import users
             for i in range(len(users)):
                 if users[i]["name"] == user.username:
                     self.current_user_ind = i
                     break
-
             self.current_user_label.config(text=f"Welcome, {user.username}")
             self.balance_label.config(text="Balance: $******")
         else:
@@ -169,6 +158,10 @@ class TransferPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
+        for i in range(len(users)):
+            if users[i]["name"] == controller.current_user:
+                i = self.current_user_ind
+                break
         self.current_user_label = tk.Label(self, text="", font=("Arial", 14, "bold"))
         self.current_user_label.grid(row=0, column=0, padx=20, pady=10, sticky="w")
         self.balance_label = tk.Label(self, text="", font=("Arial", 12))
@@ -187,11 +180,32 @@ class TransferPage(Frame):
         self.recvr.grid(row=4, column=1, padx=20, pady=20)
         self.receiver_status = tk.Label(self, text="", fg="red")
         self.receiver_status.grid(row=4, column=2, padx=10)
-        from users import BankAccount
-        self.transfer_button = tk.Button(self, text="Transfer", width=12, command=lambda: BankAccount.transfer_money( self.controller.current_user,self.recvr.get(),float(self.trsmoney.get())))
+        for x in range(len(users)):
+            if users[x]["name"] == self.recvr:
+                reind = x
+                break
+        self.transfer_button = tk.Button(self, text="Transfer", width=12, command=self.transfer_action)
         self.transfer_button.grid(row=5, column=0, pady=10, padx=20)
         self.transfer_button.config(state="disabled")
 
+    def transfer_action(self):
+        sender = self.controller.current_user
+        receiver_name = self.recvr.get().capitalize()
+        amount = float(self.trsmoney.get())
+        sender_ind = None
+        receiver_ind = None
+        for i, u in enumerate(users):
+            if u["name"] == sender.username:
+                sender_ind = i
+            if u["name"] == receiver_name:
+                receiver_ind = i
+        if sender_ind is None or receiver_ind is None:
+            self.receiver_status.config(text="User not found!", fg="red")
+            return
+        result = sender.transfer_money(receiver_name, amount, sender_ind, receiver_ind)
+        self.balance_label.config(text=f"Balance: ${sender.balance}")
+        self.receiver_status.config(text="Transfer Successful", fg="green")
+        print(result)
 
 
     def update_page(self):
@@ -213,9 +227,8 @@ class TransferPage(Frame):
 
 
     def check_receiver(self, *args):
-        from users import users
+        from transaction import users
         name = self.recvr_var.get()
-
         if name == "":
             self.receiver_status.config(text="")
             return
@@ -227,7 +240,7 @@ class TransferPage(Frame):
         self.receiver_status.config(text="✗ User not found", fg="red")
 
     def transferring(self):
-        from users import BankAccount
+        from transaction import BankAccount
         for i in range(len(users)):
             if self.recvr == users[i]["name"]:
                 self.recvr = BankAccount(users[i]["name"], users[i]["pin"], users[i]["balance"], users[i]["transactions"])
@@ -246,18 +259,13 @@ class HistoryPage(Frame):
         self.controller = controller
         self.list_box = tk.Listbox(self, width=50, height=15)
         self.list_box.pack(pady=20)
-
-
-
-
+        self.back_button = tk.Button(self,text="Back",command=lambda: self.controller.show_frame("MainMenu"))
+        self.back_button.pack(pady=20)
 
     def update_page(self):
         self.list_box.delete(0, tk.END)
         for item in self.controller.current_user.trnsct_list:
             self.list_box.insert(tk.END, item)
-        tk.Button(self, text="Back",command=lambda: self.controller.show_frame("MainMenu")).pack(pady=20)
-
-
 
 
 
@@ -286,7 +294,7 @@ class WithdrawPage(Frame):
 
 
 app = App()
-app.geometry('900x500')
+app.geometry('1920x1080')
 app.title('Enhanced ATM')
 app.mainloop()
 
