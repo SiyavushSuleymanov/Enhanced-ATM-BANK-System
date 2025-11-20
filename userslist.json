@@ -1,34 +1,32 @@
-{
-  "users": [
-    {
-      "name": "Akbar",
-      "pin": 4321,
-      "balance": 1500,
-      "transactions": []
-    },
-    {
-      "name": "Siyavus",
-      "pin": 2211,
-      "balance": 820,
-      "transactions": []
-    },
-    {
-      "name": "Kenan",
-      "pin": 9876,
-      "balance": 2500,
-      "transactions": []
-    },
-    {
-      "name": "Polad",
-      "pin": 5533,
-      "balance": 300,
-      "transactions": []
-    },
-    {
-      "name": "Turab",
-      "pin": 1122,
-      "balance": 1250,
-      "transactions": []
-    }
-  ]
-}
+[
+  {
+    "name": "Akbar",
+    "pin": 4321,
+    "balance": 1500,
+    "transactions": []
+  },
+  {
+    "name": "Siyavus",
+    "pin": 2211,
+    "balance": 820,
+    "transactions": []
+  },
+  {
+    "name": "Kenan",
+    "pin": 9876,
+    "balance": 2570.0,
+    "transactions": []
+  },
+  {
+    "name": "Polad",
+    "pin": 5533,
+    "balance": 300,
+    "transactions": []
+  },
+  {
+    "name": "Turab",
+    "pin": 1122,
+    "balance": 1250,
+    "transactions": []
+  }
+]

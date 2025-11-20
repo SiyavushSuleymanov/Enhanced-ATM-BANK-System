@@ -50,7 +50,7 @@ class LoginPage(Frame):
 
 
     def login_user(self):
-        from users import users
+        from users  import users
         usr = self.usr.get().capitalize()
         pin = int(self.entered_pin.get())
         current_user_ind = None
