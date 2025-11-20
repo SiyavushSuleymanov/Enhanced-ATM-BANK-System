@@ -2,11 +2,10 @@ from datetime import datetime
 import json
 import sys
 
+
 with open("userslist.json", "r") as f:
     data = json.load(f)
-
 users = data['users']
-
 
 class BankAccount:
     def __init__(self, username: str, pin: int, balance: float, trnsct_list):
@@ -24,34 +23,39 @@ class BankAccount:
     def updt_balance(self, amount, ind):
         self.balance += amount
         users[ind]["balance"] = self.balance
-        self.trnsct_list.append(f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated")
+        self.trnsct_list.append(f"{self.username} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated")
         print(f"{self.username}'s balance updated successfully! {self.username}'s current balance is {self.balance}")
         with open("userslist.json", 'w') as r:
-            json.dump(users, r, indent=2)
+            json.dump({"users": users}, r, indent=2)
+        return f"{self.username} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated"
         return f"{self.username} updated {trsmoney} AZN. Current balance {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated"
 
     def transfer_money(self, recvr, trsmoney, ind, reind):
+        from transaction import users
         if trsmoney > self.balance:
             return "You don't have enough balance for this operation!"
         else:
             self.balance -= trsmoney
             users[ind]["balance"] = self.balance
-            recvr.balance += trsmoney
-            users[reind]["balance"] = recvr.balance
-            self.trnsct_list.append(f"{self.username} to {recvr.get_user()} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
-            recvr.trnsct_list.append(f"{self.username} transfered {trsmoney} AZN")
+            users[reind]["balance"] += trsmoney
+            self.trnsct_list.append(f"{self.username} to {recvr} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
+            users[reind]["transactions"].append(f"{self.username} transfered {trsmoney} AZN")
             with open("userslist.json", 'w') as r:
-                json.dump(users, r, indent=2)
+                json.dump({"users": users}, r, indent=2)
+            print(f"{self.username}'s transaction successful! {self.username}'s current balance is {self.balance}")
+            return f"{self.username} to {recvr} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
             return f"{self.username} transfered to {recvr.get_user()} {trsmoney} AZN. {self.username}'s balance current {self.balance} AZN - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))}"
+
+
 
     def deposit_money(self, amount, ind):
         self.balance += amount
         users[ind]["balance"] = self.balance
-        self.trnsct_list.append(f"You updated your balance {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))}")
+        print(f"Your current balance is {self.balance} AZN")
+        self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated")
         with open("userslist.json", 'w') as r:
-            json.dump(users, r, indent=2)
-        return f"You updated your balance {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))}"
-
+            json.dump({"users": users}, r, indent=2)
+        return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated"
     def withdraw_money(self, amount, ind):
         print(f"Your current balance is {self.balance} AZN")
         if amount > self.balance:
@@ -60,17 +64,17 @@ class BankAccount:
             self.balance -= amount
             users[ind]["balance"] = self.balance
             print("Operation was done succesfully")
-            self.trnsct_list.append(f"{self.username} took out {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))}")
+            self.trnsct_list.append(f"{self.username} - {amount} - {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
             with open("userslist.json", 'w') as r:
-                json.dump(users, r, indent=2)
-            return f"{self.username} took out {amount} AZN. {self.username}'s current balance {self.balance} AZN - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))}"
-
+                json.dump({"users":users}, r, indent=2)
+            return f"{self.username} - {amount} - {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
     def transaction(self):
         for tr in self.trnsct_list[:-1]:
             print(tr)
         return self.trnsct_list[-1]
 
     def exit(self):
+        print("Succeefully finished!")
         print("Successfully finished!")
         sys.exit()
 
@@ -110,7 +114,5 @@ for i in range(len(users)):
 #WITHDRAWING
 withdrawed_money = float(input("Enter money you want to withdraw: "))
 print(usr.withdraw_money(withdrawed_money, ind))
-
-with open("thebank.json",'w') as r:
-    json.dump(users, r, indent=2)
 '''
+
