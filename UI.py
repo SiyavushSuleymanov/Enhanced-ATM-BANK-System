@@ -30,7 +30,7 @@ class App(tk.Tk):
 
 class LoginPage(Frame):
     def __init__(self, parent, controller):
-        Frame.__init__(self, parent, bg='light blue')
+        Frame.__init__(self, parent)
         self.controller = controller
         for i in range(20):
             self.grid_rowconfigure(i, weight=1)
@@ -137,6 +137,9 @@ class MainMenu(Frame):
 
 class DepositPage(Frame):
     def __init__(self, parent, controller):
+        from users import BankAccount
+        from transaction import users
+        from transaction import save_users
         Frame.__init__(self, parent)
         self.controller = controller
         self.current_user_label = tk.Label(self, text="", font=("Arial", 14, "bold"))
@@ -273,6 +276,19 @@ class WithdrawPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
+        self.enter_money_label = tk.Label(self, text = "Enter the amount you want to withdraw")
+        self.enter_money_label.grid( row = 0 , column = 2, pady=20)
+        self.amount = tk.Entry(self)
+        self.amount.grid(row = 0 , column = 3, pady=20)
+        tk.Button(self, text="Withdraw",command=lambda: BankAccount.withdraw_money(self.controller.current_user, float(self.amount.get()))).grid(row = 2, column = 2,pady=20)
+        self.back_button = tk.Button(self, text="Back", command = lambda:self.controller.show_frame("MainMenu"))
+        self.back_button.grid(row = 9, column = 2, pady=20)
+
+
+
+    def show_balance_func(self):
+        user = self.controller.current_user
+        self.balance_label.config(text=f"Balance: ${user.balance}")
 
 
 

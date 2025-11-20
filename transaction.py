@@ -7,6 +7,12 @@ with open("userslist.json", "r") as f:
 
 users = data['users']
 
+
+def save_users(users):
+    with open("users.json", "w") as f:
+        json.dump(users, f, indent=4)
+
+
 class BankAccount:
     def __init__(self, username: str, pin: int, balance: float, trnsct_list):
         self.username = username
@@ -47,8 +53,7 @@ class BankAccount:
             return "Your balance is low"
         else:
             print("Operation was done succesfully")
-            self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
-            return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
+            self.trnsct_list.append(f"{self.username} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
 
     def transaction(self):
         for tr in self.trnsct_list[:-1]:
