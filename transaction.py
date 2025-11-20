@@ -8,11 +8,6 @@ with open("userslist.json", "r") as f:
 users = data['users']
 
 
-def save_users(users):
-    with open("users.json", "w") as f:
-        json.dump(users, f, indent=4)
-
-
 class BankAccount:
     def __init__(self, username: str, pin: int, balance: float, trnsct_list):
         self.username = username
@@ -21,39 +16,48 @@ class BankAccount:
         self.trnsct_list = trnsct_list
 
     def get_user(self):
-        return f"Welcome, {self.username}"
+        return self.username
 
     def show_balance(self):
         return self.balance
 
-    def updt_balance(self, amount):
+    def updt_balance(self, amount, ind):
         self.balance += amount
+        users[ind]["balance"] = self.balance
         self.trnsct_list.append(f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated")
         print(f"{self.username}'s balance updated successfully! {self.username}'s current balance is {self.balance}")
         return f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated"
 
-    def transfer_money(self, recvr, trsmoney):
+    def transfer_money(self, recvr, trsmoney, ind, reind):
         if trsmoney > self.balance:
             return "You don't have enough balance for this operation!"
         else:
             self.balance -= trsmoney
-            self.trnsct_list.append(f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
+            users[ind]["balance"] = self.balance
+            recvr.balance += trsmoney
+            users[reind]["balance"] = recvr.balance
+            self.trnsct_list.append(f"{self.username} to {recvr.get_user()} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
+            recvr.trnsct_list.append(f"{self.username} transfered {trsmoney} AZN")
             print(f"{self.username}'s transaction successful! {self.username}'s current balance is {self.balance}")
-            return f"{self.username} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
+            return f"{self.username} to {recvr.get_user()} - {trsmoney} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
 
-    def deposit_money(self, amount):
+    def deposit_money(self, amount, ind):
         self.balance += amount
+        users[ind]["balance"] = self.balance
         print(f"Your current balance is {self.balance} AZN")
         self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated")
         return f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - updated"
 
-    def withdraw_money(self, amount):
+    def withdraw_money(self, amount, ind):
         print(f"Your current balance is {self.balance} AZN")
         if amount > self.balance:
             return "Your balance is low"
         else:
+            self.balance -= amount
+            users[ind]["balance"] = self.balance
             print("Operation was done succesfully")
-            self.trnsct_list.append(f"{self.username} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
+            self.trnsct_list.append(f"{self.username} - {amount} - {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
+            return f"{self.username} - {amount} - {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
 
     def transaction(self):
         for tr in self.trnsct_list[:-1]:
@@ -64,13 +68,14 @@ class BankAccount:
         print("Succeefully finished!")
         sys.exit()
 
-'''
+
 #LOGIN
 usr = input("Enter name: ")
 usr = usr.capitalize()
 for i in range(len(users)):
     if usr == users[i]["name"]:
         usr = BankAccount(users[i]["name"], users[i]["pin"], users[i]["balance"], users[i]["transactions"])
+        ind = i
         pin = int(input(f"{usr.get_user()}. Enter your PIN: "))
         if pin == users[i]["pin"]:
             print(f"Welcome to your Bank Account. Your current balance is {usr.show_balance()}")
@@ -82,23 +87,24 @@ for i in range(len(users)):
 
 #DEPOSIT
 amount = float(input("Enter the amount of money you want to deposit: "))
-print(usr.deposit_money(amount))
+print(usr.deposit_money(amount, ind))
 
 #TRANSFERING
 recvr = input("Enter receiver's name you want to transfer money to: ").capitalize()
 for i in range(len(users)):
     if recvr == users[i]["name"]:
+        reind = i
         recvr = BankAccount(users[i]["name"], users[i]["pin"], users[i]["balance"], users[i]["transactions"])
         trsmoney = float(input("Enter the amount of money you want to transfer: "))
-        print(usr.transfer_money(recvr, trsmoney))
-        print(recvr.updt_balance(trsmoney))
+        print(usr.transfer_money(recvr, trsmoney, ind, reind))
         break
     elif i == len(users) - 1:
         print("User not found!")
 
 #WITHDRAWING
-withdrawed_money = float(input("Enter money you want to get: "))
-print(usr.withdraw_money(withdrawed_money))
+withdrawed_money = float(input("Enter money you want to withdraw: "))
+print(usr.withdraw_money(withdrawed_money, ind))
 
-print(usr.transaction())
-'''
+with open("thebank.json", 'w') as r:
+    json.dump(users, r, indent=2)
+
