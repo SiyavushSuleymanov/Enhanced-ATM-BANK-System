@@ -38,10 +38,10 @@ class LoginPage(Frame):
             self.grid_columnconfigure(j, weight=1)
         entered_username = tk.Label(self, text="Username:")
         entered_username.grid(row=2, column=6, pady=10, padx=20)
-        self.entered_username = tk.Entry(self)
-        self.entered_username.grid(row=2, column=7, pady=10)
-        entered_pin = tk.Label(self, text="PIN:")
-        entered_pin.grid(row=3, column=6, pady=10, padx=20)
+        self.usr = tk.Entry(self)
+        self.usr.grid(row=2, column=7, pady=10)
+        pin = tk.Label(self, text="PIN:")
+        pin.grid(row=3, column=6, pady=10, padx=20)
         self.entered_pin = tk.Entry(self, show="*")
         self.entered_pin.grid(row=3, column=7, pady=10)
         login_button = tk.Button(self, text="Login", command=self.login_user, width=12, height=1)
@@ -51,38 +51,23 @@ class LoginPage(Frame):
 
     def login_user(self):
         from users import users
-        username = self.entered_username.get()
-        pin = self.entered_pin.get()
-        print("Entered username:", username)
-        print("Entered PIN:", pin)
-        if pin == "":
-            print("PIN is empty")
-            return
-        try:
-            pin = int(pin)
-        except:
-            print("PIN is not a number")
-            return
-        found_user = None
-        for u in users:
-            if username == u["name"]:
-                found_user = u
+        usr = self.usr.get().capitalize()
+        pin = int(self.entered_pin.get())
+        current_user_ind = None
+        for i in range(len(users)-1):
+            if usr == users[i]["name"]:
+                usr = BankAccount(users[i]["name"], users[i]["pin"], users[i]["balance"], users[i]["transactions"])
+                self.current_user_ind = current_user_ind
+                if pin == users[i]["pin"]:
+                    self.controller.current_user = usr
+                    self.controller.show_frame("MainMenu")
+                else:
+                    passwd_error = tk.Label(self, text="Incorrect PIN", fg="red")
+                    passwd_error.grid(row=5, column=7, columnspan=2, pady=10)
                 break
-        if not found_user:
-            print("User not found in users.py")
-            return
-        print("User found:", found_user["name"])
-        if pin == found_user["pin"]:
-            self.controller.current_user = BankAccount(
-                found_user["name"],
-                found_user["pin"],
-                found_user["balance"],
-                found_user["transactions"]
-            )
-            self.controller.show_frame("MainMenu")
-        else:
-            print("PIN is incorrect!")
-
+            elif i == len(users) - 1:
+                self.controller.current_user = None
+                self.controller.show_frame("LoginPage")
 
 
 
@@ -138,10 +123,9 @@ class MainMenu(Frame):
 class DepositPage(Frame):
     def __init__(self, parent, controller):
         from users import BankAccount
-        from transaction import users
-        from transaction import save_users
         Frame.__init__(self, parent)
         self.controller = controller
+
         self.current_user_label = tk.Label(self, text="", font=("Arial", 14, "bold"))
         self.current_user_label.grid(row=0, column=0, padx=20, pady=10, sticky="w")
         self.balance_label = tk.Label(self, text="", font=("Arial", 12))
@@ -154,7 +138,7 @@ class DepositPage(Frame):
         self.amount = tk.Entry(self)
         self.amount.grid(row=3, column=1, padx=20, pady=20)
         from transaction import BankAccount
-        self.deposit_button = tk.Button(self, text="Deposit", width=12, command=lambda: BankAccount.deposit_money(self.controller.current_user, float(self.amount.get())))
+        self.deposit_button = tk.Button(self, text="Deposit", width=12, command=lambda: BankAccount.deposit_money(self.controller.current_user, float(self.amount.get()),self.current_user_ind))
         self.deposit_button.grid(row=4, column=0, pady=10, padx=20)
 
 
@@ -167,8 +151,14 @@ class DepositPage(Frame):
     def update_page(self):
         user = self.controller.current_user
         if user:
+            from users import users
+            for i in range(len(users)):
+                if users[i]["name"] == user.username:
+                    self.current_user_ind = i
+                    break
+
             self.current_user_label.config(text=f"Welcome, {user.username}")
-            self.balance_label.config(text=f"Balance: $******")
+            self.balance_label.config(text="Balance: $******")
         else:
             self.current_user_label.config(text="Welcome, Guest")
             self.balance_label.config(text="Balance: $0")

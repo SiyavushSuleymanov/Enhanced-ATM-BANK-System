@@ -68,7 +68,7 @@ class BankAccount:
         print("Succeefully finished!")
         sys.exit()
 
-
+'''
 #LOGIN
 usr = input("Enter name: ")
 usr = usr.capitalize()
@@ -104,7 +104,7 @@ for i in range(len(users)):
 #WITHDRAWING
 withdrawed_money = float(input("Enter money you want to withdraw: "))
 print(usr.withdraw_money(withdrawed_money, ind))
-
+'''
 with open("thebank.json", 'w') as r:
     json.dump(users, r, indent=2)
 
