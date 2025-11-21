@@ -2,7 +2,6 @@ from datetime import datetime
 import json
 import sys
 
-
 with open("userslist.json", "r") as f:
     data = json.load(f)
 users = data['users']
