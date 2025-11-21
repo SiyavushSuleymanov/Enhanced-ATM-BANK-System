@@ -12,6 +12,7 @@ class BankAccount:
         self.pin = pin
         self.balance = balance
         self.trnsct_list = trnsct_list
+        self.wrong_tries = wrong_tries
 
     def get_user(self):
         return self.username

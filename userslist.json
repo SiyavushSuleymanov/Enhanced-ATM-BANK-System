@@ -10,13 +10,15 @@
         "Akbar received 22.0 AZN from Kenan - 2025-11-21 21:40:29",
         "Akbar received 34.0 AZN from Kenan - 2025-11-21 21:45:01",
         "Akbar received 30.0 AZN from Kenan - 2025-11-21 21:45:07"
-      ]
+      ],
+      "wrong_tries": 0
     },
     {
       "name": "Siyavus",
       "pin": 2211,
       "balance": 1820.0,
-      "transactions": []
+      "transactions": [],
+      "wrong_tries": 0
     },
     {
       "name": "Kenan",
@@ -31,19 +33,23 @@
         "Kenan sent 22.0 AZN to Akbar - 2025-11-21 21:40:29",
         "Kenan sent 34.0 AZN to Akbar - 2025-11-21 21:45:01",
         "Kenan sent 30.0 AZN to Akbar - 2025-11-21 21:45:07"
-      ]
+      ],
+      "wrong_tries": 0
     },
     {
       "name": "Polad",
       "pin": 5533,
       "balance": 300,
-      "transactions": []
+      "transactions": [],
+      "wrong_tries": 0
+
     },
     {
       "name": "Turab",
       "pin": 1122,
       "balance": 0.0,
-      "transactions": []
+      "transactions": [],
+      "wrong_tries": 0
     }
   ]
 }
