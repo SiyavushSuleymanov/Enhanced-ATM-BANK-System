@@ -1,0 +1,44 @@
+{
+    "en": {
+        "username": "Username",
+        "pin": "PIN",
+        "balance": "Balance",
+        "transaction": "Transaction",
+        "transfer_money": "Transfer Money",
+        "choose_language": "Choose Language",
+        "deposit_money": "Deposit Money",
+        "withdraw_money": "Withdraw Money",
+        "exit": "Exit",
+        "logout": "Logout",
+        "language": "Language",
+        "welcome": "Welcome"
+    },
+    "az": {
+        "username": "İstifadəçi adı",
+        "pin": "PIN",
+        "balance": "Balans",
+        "transaction": "Tranzaksiya",
+        "transfer_money": "Pul köçürmək",
+        "choose_language": "Dili seçin",
+        "deposit_money": "Pul əlavə et",
+        "withdraw_money": "Pul çıxar",
+        "exit": "Çıxış",
+        "logout": "Hesabdan çıx",
+        "language": "Dil",
+        "welcome": "Xoş gəlmisiniz"
+    },
+    "ru": {
+        "username": "Имя пользователя",
+        "pin": "PIN",
+        "balance": "Баланс",
+        "transaction": "Транзакция",
+        "transfer_money": "Перевести деньги",
+        "choose_language": "Выберите язык",
+        "deposit_money": "Пополнить баланс",
+        "withdraw_money": "Снять деньги",
+        "exit": "Выход",
+        "logout": "Выйти из аккаунта",
+        "language": "Язык",
+        "welcome": "Добро пожаловать"
+    }
+}
