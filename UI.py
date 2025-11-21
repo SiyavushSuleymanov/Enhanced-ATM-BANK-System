@@ -158,37 +158,41 @@ class TransferPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
-        for i in range(len(users)):
-            if users[i]["name"] == controller.current_user:
-                i = self.current_user_ind
-                break
         self.current_user_label = tk.Label(self, text="", font=("Arial", 14, "bold"))
         self.current_user_label.grid(row=0, column=0, padx=20, pady=10, sticky="w")
+
         self.balance_label = tk.Label(self, text="", font=("Arial", 12))
         self.balance_label.grid(row=1, column=0, padx=20, pady=5, sticky="w")
-        self.update_balance_button = tk.Button(self, text="Show Balance", command=self.show_balance_func)
-        self.update_balance_button.grid(row=1, column=1, padx=10, pady=5, sticky="w")
-        self.MainMenu_button = tk.Button(self, text="Main Menu", width=12,command=lambda: controller.show_frame("MainMenu"))
-        self.MainMenu_button.grid(row=9, column=0, pady=200, padx=20)
+
+        tk.Button(self, text="Show Balance", command=self.show_balance_func).grid(
+            row=1, column=1, padx=10, pady=5, sticky="w"
+        )
+
+        tk.Button(self, text="Main Menu", width=12,
+                  command=lambda: controller.show_frame("MainMenu")).grid(
+            row=9, column=0, pady=200, padx=20
+        )
+
         tk.Label(self, text="Transfer Amount: ").grid(row=3, column=0, padx=20, pady=20)
         self.trsmoney = tk.Entry(self)
         self.trsmoney.grid(row=3, column=1, padx=20, pady=20)
+
         tk.Label(self, text="Receiver Username: ").grid(row=4, column=0, padx=20, pady=20)
+
         self.recvr_var = tk.StringVar()
         self.recvr_var.trace("w", self.check_receiver)
         self.recvr = tk.Entry(self, textvariable=self.recvr_var)
         self.recvr.grid(row=4, column=1, padx=20, pady=20)
+
         self.receiver_status = tk.Label(self, text="", fg="red")
         self.receiver_status.grid(row=4, column=2, padx=10)
-        for x in range(len(users)):
-            if users[x]["name"] == self.recvr:
-                reind = x
-                break
-        self.transfer_button = tk.Button(self, text="Transfer", width=12, command=self.transfer_action)
+
+        self.transfer_button = tk.Button(self, text="Transfer", width=12, command= self.transfer_action)
         self.transfer_button.grid(row=5, column=0, pady=10, padx=20)
         self.transfer_button.config(state="disabled")
 
     def transfer_action(self):
+        from transaction import users
         sender = self.controller.current_user
         receiver_name = self.recvr.get().capitalize()
         amount = float(self.trsmoney.get())
@@ -202,53 +206,33 @@ class TransferPage(Frame):
         if sender_ind is None or receiver_ind is None:
             self.receiver_status.config(text="User not found!", fg="red")
             return
-        result = sender.transfer_money(receiver_name, amount, sender_ind, receiver_ind)
+        result = sender.transfer_money(recvr=receiver_name, trsmoney=amount, ind=sender_ind, reind = receiver_ind)
         self.balance_label.config(text=f"Balance: ${sender.balance}")
         self.receiver_status.config(text="Transfer Successful", fg="green")
         print(result)
 
-
     def update_page(self):
         user = self.controller.current_user
-        if user:
-            self.current_user_label.config(text=f"Welcome, {user.username}")
-            self.balance_label.config(text=f"Balance: $******")
-        else:
-            self.current_user_label.config(text="Welcome, Guest")
-            self.balance_label.config(text="Balance: $0")
-
-
+        self.current_user_label.config(text=f"Welcome, {user.username}")
+        self.balance_label.config(text=f"Balance: $******")
 
     def show_balance_func(self):
         user = self.controller.current_user
         self.balance_label.config(text=f"Balance: ${user.balance}")
 
-
-
-
     def check_receiver(self, *args):
-        from transaction import users
-        name = self.recvr_var.get()
-        if name == "":
+        recvr = self.recvr_var.get().capitalize()
+        if recvr == "":
             self.receiver_status.config(text="")
+            self.transfer_button.config(state="disabled")
             return
         for u in users:
-            if u["name"] == name:
+            if u["name"] == recvr:
                 self.receiver_status.config(text="✓ User found", fg="green")
                 self.transfer_button.config(state="normal")
                 return
         self.receiver_status.config(text="✗ User not found", fg="red")
-
-    def transferring(self):
-        from transaction import BankAccount
-        for i in range(len(users)):
-            if self.recvr == users[i]["name"]:
-                self.recvr = BankAccount(users[i]["name"], users[i]["pin"], users[i]["balance"], users[i]["transactions"])
-                print(self.usr.transfer_money(self.recvr, self.trsmoney))
-                print(self.recvr.updt_balance(self.trsmoney))
-                break
-            elif i == len(users) - 1:
-                print("User not found!")
+        self.transfer_button.config(state="disabled")
 
 
 class HistoryPage(Frame):

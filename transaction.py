@@ -29,21 +29,26 @@ class BankAccount:
         return f"{self.username} updated {amount} AZN. Current balance {self.balance} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
     def transfer_money(self, recvr, trsmoney, ind, reind):
-        from transaction import users
-        if trsmoney > self.balance:
-            return "You don't have enough balance for this operation!"
-        else:
-            self.balance -= trsmoney
-            users[ind]["balance"] = self.balance
-            recvr.balance += trsmoney
-            users[reind]["balance"] = recvr.balance
-            self.trnsct_list.append(
-                f"{self.username} transfered to {recvr.get_user()} - {trsmoney} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            recvr.trnsct_list.append(
-                f"{self.username} transfered {trsmoney} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            with open("userslist.json", 'w') as r:
-                json.dump({"users": users}, r, indent=2)
-            return f"{self.username} transfered to {recvr.get_user()} {trsmoney} AZN. {self.username}'s balance current {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        from datetime import datetime
+        import json
+
+        if trsmoney > users[ind]["balance"]:
+            return "You don't have enough balance!"
+        self.balance -= trsmoney
+        users[ind]["balance"] -= trsmoney
+        users[reind]["balance"] += trsmoney
+
+        users[ind]["transactions"].append(
+            f"{users[ind]['name']} sent {trsmoney} AZN to {recvr} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        users[reind]["transactions"].append(
+            f"{recvr} received {trsmoney} AZN from {users[ind]['name']} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+
+        with open("userslist.json", "w") as f:
+            json.dump({"users": users}, f, indent=2)
+
+        return "Transfer successful!"
 
 
 
