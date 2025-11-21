@@ -251,8 +251,6 @@ class TransferPage(Frame):
                 print("User not found!")
 
 
-
-
 class HistoryPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -278,18 +276,30 @@ class WithdrawPage(Frame):
         self.enter_money_label.grid( row = 0 , column = 2, pady=20)
         self.amount = tk.Entry(self)
         self.amount.grid(row = 0 , column = 3, pady=20)
-        tk.Button(self, text="Withdraw",command=lambda: BankAccount.withdraw_money(self.controller.current_user, float(self.amount.get()))).grid(row = 2, column = 2,pady=20)
+        for user_ind in range(len(users)):
+            if users[user_ind]["name"] == self.controller.current_user:
+                ind = user_ind
+                break
+        self.balance_label = tk.Label(self, text =f"Balance: ${users[user_ind]['balance']}")
+        self.balance_label.grid(row = 1, column = 2, pady=20)
+        self.update_balance_button = tk.Button(self, text="Show Balance", command=self.show_balance_func)
+        self.update_balance_button.grid(row = 1, column = 3, pady=20)
+        tk.Button(self, text="Withdraw",command= self.withdraw_action).grid(row = 2, column = 2,pady=20)
         self.back_button = tk.Button(self, text="Back", command = lambda:self.controller.show_frame("MainMenu"))
         self.back_button.grid(row = 9, column = 2, pady=20)
 
-
-
+    def withdraw_action(self):
+        user = self.controller.current_user
+        amount = float(self.amount.get())
+        user_ind = None
+        for i, u in enumerate(users):
+            if u["name"] == user.username:
+                user_ind = i
+        result = user.withdraw_money(amount, user_ind)
+        print(result)
     def show_balance_func(self):
         user = self.controller.current_user
         self.balance_label.config(text=f"Balance: ${user.balance}")
-
-
-
 
 
 

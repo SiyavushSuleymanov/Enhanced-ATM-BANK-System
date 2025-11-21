@@ -63,11 +63,11 @@ class BankAccount:
         else:
             self.balance -= amount
             users[ind]["balance"] = self.balance
-            print("Operation was done succesfully")
-            self.trnsct_list.append(f"{self.username} - {amount} - {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
+            print(f"Your current balance is {self.balance} AZN")
+            self.trnsct_list.append(f"{self.balance} - {amount} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out")
             with open("userslist.json", 'w') as r:
-                json.dump({"users":users}, r, indent=2)
-            return f"{self.username} - {amount} - {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out"
+                json.dump({"users": users}, r, indent=2)
+            return f"{self.username} - {amount} - {self.balance} - {datetime.now().strftime(("%Y-%m-%d %H:%M:%S"))} - taken out",
     def transaction(self):
         for tr in self.trnsct_list[:-1]:
             print(tr)
