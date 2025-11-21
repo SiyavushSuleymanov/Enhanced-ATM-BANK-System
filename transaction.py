@@ -13,6 +13,7 @@ class BankAccount:
         self.balance = balance
         self.trnsct_list = trnsct_list
         self.wrong_tries = wrong_tries
+        self.blocked = False
 
     def get_user(self):
         return self.username

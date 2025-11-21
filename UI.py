@@ -55,9 +55,17 @@ class LoginPage(Frame):
         pin = int(self.entered_pin.get())
         for current_user_ind in range(len(users)):
 
+
+
             if usr == users[current_user_ind]["name"]:
                 usr = BankAccount(users[current_user_ind]["name"], users[current_user_ind]["pin"], users[current_user_ind]["balance"], users[current_user_ind]["transactions"], users[current_user_ind]["wrong_tries"])
+                usr.blocked = users[current_user_ind]["blocked"]
                 self.current_user_ind = current_user_ind
+
+                if usr.blocked:
+                    passwd_error = tk.Label(self, text="Card is blocked", fg="red")
+                    passwd_error.grid(row=5, column=7, columnspan=2, pady=10)
+                    return
 
                 #Pin check
                 if pin == users[current_user_ind]["pin"]:
@@ -66,10 +74,14 @@ class LoginPage(Frame):
                     self.controller.show_frame("MainMenu")
                 else:
                     users[current_user_ind]["wrong_tries"]+=1
+
                     if users[current_user_ind]["wrong_tries"]<3:
+
                         passwd_error = tk.Label(self, text="Incorrect PIN", fg="red")
                         passwd_error.grid(row=5, column=7, columnspan=2, pady=10)
                     else:
+                        usr.blocked = True
+                        users[current_user_ind]["blocked"] = True
                         passwd_error = tk.Label(self, text="Card is blocked", fg="red")
                         passwd_error.grid(row=5, column=7, columnspan=2, pady=10)
                         break
