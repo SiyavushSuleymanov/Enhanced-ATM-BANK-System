@@ -7,7 +7,7 @@ with open("userslist.json", "r") as f:
 users = data['users']
 
 class BankAccount:
-    def __init__(self, username: str, pin: int, balance: float, trnsct_list):
+    def __init__(self, username: str, pin: int, balance: float, trnsct_list, wrong_tries = 0):
         self.username = username
         self.pin = pin
         self.balance = balance
