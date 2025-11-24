@@ -8,7 +8,7 @@ def pressed(event):
         pin += event.keysym
         upgrade()
         if upgrade() == 1:
-            pin = pin[:4] #OUR ENTERED 4-digit PIN (result)
+            pin = pin[:4] #OUR ENTERED 4-digit PIN - (result)
             print(int(pin))
     elif event.keysym == "BackSpace":
         if type(pin) == str:
