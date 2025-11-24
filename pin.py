@@ -26,7 +26,7 @@ def delete():
 
 
 window = Tk()
-window.title("PIN")
+window.title("Enter the PIN")
 
 pin = ""
 
