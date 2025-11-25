@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 from tkinter import Frame, ttk
-from PIL import Image, ImageTk
+from PIL import Image
 from transaction import BankAccount, users
 
 
@@ -46,7 +46,7 @@ class App(tk.Tk):
             image_path = "ufaz_vector_bg.png"
             original_image = Image.open(image_path)
             resized_image = original_image.resize((WINDOW_WIDTH, WINDOW_HEIGHT), Image.LANCZOS)
-            self.bg_image = ImageTk.PhotoImage(resized_image)
+            self.bg_image = Image.PhotoImage(resized_image)
             background_label = tk.Label(self, image=self.bg_image)
             background_label.image = self.bg_image
             background_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -83,6 +83,7 @@ class App(tk.Tk):
             if hasattr(frame, "update_page"):
                 frame.update_page()
             frame.tkraise()
+
 class LoadingPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
@@ -111,24 +112,62 @@ class LoginPage(ttk.Frame):
         entered_username = ttk.Label(self, text="Username:", font=("Segoe UI", 18, "bold"))
         entered_username.grid(row=3, column=2, columnspan=3, sticky="e", padx=10, pady=20)
         self.usr = ttk.Entry(self, style='TEntry')
+        self.usr.focus_set()
         self.usr.grid(row=3, column=5, columnspan=3, sticky="w", padx=10, pady=20)
+        self.usr.bind("<Return>", self.login_user)
         pin = ttk.Label(self, text="PIN:", font=("Segoe UI", 18, "bold"))
         pin.grid(row=4, column=2, columnspan=3, sticky="e", padx=10, pady=20)
-        self.entered_pin = ttk.Entry(self, show="*", style='TEntry')
-        self.entered_pin.grid(row=4, column=5, columnspan=3, sticky="w", padx=10, pady=20)
         login_button = ttk.Button(self, text="Login", command=self.login_user, style='Primary.TButton')
         login_button.grid(row=5, column=2, columnspan=6, pady=40, sticky="ew")
         self.error_label = ttk.Label(self, text="", foreground=DANGER_COLOR, background="white")
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
-    def login_user(self):
+        self.pin = ""
+    def login_user(self, k=0):
+        self.usr.config(state="disabled")
+
+        # WORKING ON...
+        pin_len = 4
+        def pressed(ent_digit):
+            if ent_digit.keysym.isdigit() and len(str(self.pin)) != 4:
+                self.pin += ent_digit.keysym
+                upgrade()
+                if upgrade() == 1:
+                    self.pin = self.pin[:4] # OUR ENTERED 4-digit PIN - (result)
+                    self.l = True
+                    # print(int(self.pin))
+                    return 0
+            elif ent_digit.keysym == "BackSpace":
+                if type(self.pin) == str:
+                    delete()
+                    self.pin = self.pin[:-1]
+                elif type(self.pin) == int:
+                    pass
+
+        def upgrade():  # Upgrades dot list
+            if len(self.pin) <= pin_len:
+                dot_list[len(self.pin) - 1].config(text='◉', font=("Arial", 30), foreground="blue")
+            if len(self.pin) == pin_len:
+                return 1
+
+        def delete():
+            if len(self.pin) <= pin_len:
+                dot_list[len(self.pin) - 1].config(text='〇', font=("Arial", 30), foreground="blue")
+
+        frm = ttk.Frame(self)
+        frm.grid(row=4, column=3, columnspan=5, padx=10, pady=20)
+        dot_list = []
+        for _ in range(pin_len):
+            dot = ttk.Label(frm, text='〇', font=('Arial', 30), foreground="blue")
+            dot.pack(side="left")
+            dot_list.append(dot)
+
+        self.focus_set()
+        self.bind('<Key>', pressed)
+        # WORKING ON...
+
+        usr_input = self.usr.get().capitalize()
         from transaction import users
         self.error_label.config(text="")
-        usr_input = self.usr.get().capitalize()
-        try:
-            pin_input = int(self.entered_pin.get())
-        except ValueError:
-            self.error_label.config(text="PIN must be a number.")
-            return
         user_found = False
         for current_user_ind in range(len(users)):
             user_data = users[current_user_ind]
@@ -141,29 +180,33 @@ class LoginPage(ttk.Frame):
                 if usr.blocked:
                     self.error_label.config(text="❌ Card is blocked", foreground=DANGER_COLOR)
                     return
-                if pin_input == user_data["pin"]:
-                    users[current_user_ind]["wrong_tries"] = 0
-                    self.controller.current_user = usr
-                    self.usr.delete(0, tk.END)
-                    self.entered_pin.delete(0, tk.END)
-                    self.controller.show_frame("MainMenu", transition_time_ms=1500)
-                else:
-                    users[current_user_ind]["wrong_tries"] += 1
-                    if users[current_user_ind]["wrong_tries"] < 3:
-                        self.error_label.config(
-                            text=f"❌ Incorrect PIN ({3 - users[current_user_ind]['wrong_tries']} tries left)",
-                            foreground=DANGER_COLOR)
+                try:
+                    if int(self.pin) == user_data["pin"]:
+                        users[current_user_ind]["wrong_tries"] = 0
+                        self.controller.current_user = usr
+                        self.usr.delete(0, tk.END)
+                        self.controller.show_frame("MainMenu", transition_time_ms=1500)
                     else:
-                        usr.blocked = True
-                        users[current_user_ind]["blocked"] = True
-                        self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
-                        break
+                        users[current_user_ind]["wrong_tries"] += 1
+                        if users[current_user_ind]["wrong_tries"] < 3:
+                            self.error_label.config(
+                                text=f"❌ Incorrect PIN ({3 - users[current_user_ind]['wrong_tries']} tries left)",
+                                foreground=DANGER_COLOR)
+                            #Here
+                        else:
+                            usr.blocked = True
+                            users[current_user_ind]["blocked"] = True
+                            self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
+                            break
+                except ValueError:
+                    print("Continue..")
                 break
         if not user_found:
             self.error_label.config(text="❌ User not found", foreground=DANGER_COLOR)
     def logout(self):
         self.controller.current_user = None
         self.controller.show_frame("LoginPage", transition_time_ms=1500)
+
 class MainMenu(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
