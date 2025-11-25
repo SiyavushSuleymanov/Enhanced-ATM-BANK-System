@@ -143,11 +143,14 @@ class LoginPage(ttk.Frame):
                 elif type(self.pin) == int:
                     pass
 
-        def upgrade():  # Upgrades dot list
-            if len(self.pin) <= pin_len:
-                dot_list[len(self.pin) - 1].config(text='◉', font=("Arial", 30), foreground="blue")
-            if len(self.pin) == pin_len:
-                return 1
+        def upgrade(): # Upgrades dot list
+            try:
+                if len(self.pin) <= pin_len:
+                    dot_list[len(self.pin) - 1].config(text='◉', font=("Arial", 30), foreground="blue")
+                if len(self.pin) == pin_len:
+                    return 1
+            except IndexError:
+                pass
 
         def delete():
             if len(self.pin) <= pin_len:
@@ -202,10 +205,14 @@ class LoginPage(ttk.Frame):
                             self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
                             break
                 except ValueError:
-                    print("Continue..")
+                    pass #print("Continue..")
                 break
         if not user_found:
             self.error_label.config(text="❌ User not found", foreground=DANGER_COLOR)
+            self.usr.config(state="normal")
+            dot_list = []
+            self.pin = ""
+
     def logout(self):
         self.controller.current_user = None
         self.controller.show_frame("LoginPage", transition_time_ms=1500)
