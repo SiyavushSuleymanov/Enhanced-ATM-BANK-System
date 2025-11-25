@@ -192,7 +192,10 @@ class LoginPage(ttk.Frame):
                             self.error_label.config(
                                 text=f"❌ Incorrect PIN ({3 - users[current_user_ind]['wrong_tries']} tries left)",
                                 foreground=DANGER_COLOR)
-                            #Here
+                            self.pin = ""
+                            for dot in dot_list:
+                                dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                            self.focus_set()
                         else:
                             usr.blocked = True
                             users[current_user_ind]["blocked"] = True
