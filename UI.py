@@ -156,7 +156,7 @@ class LoginPage(ttk.Frame):
 
         def delete():
             if len(self.pin) <= pin_len:
-                dot_list[len(self.pin) - 1].config(text='〇', font=("Arial", 30), foreground="blue")
+                dot_list[len(self.pin) - 1].config(text='〇', font=("Arial", 31), foreground="blue")
 
         frm = ttk.Frame(self)
         frm.grid(row=4, column=3, columnspan=5, padx=10, pady=20)
