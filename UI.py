@@ -123,7 +123,10 @@ class LoginPage(ttk.Frame):
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
         self.pin = ""
     def login_user(self, k=0):
-        self.usr.config(state="disabled")
+        if self.usr["state"] == "active":
+            self.usr.config(state="disabled")
+        elif self.usr["state"] == "disabled":
+            self.usr.config(state="active")
 
         # WORKING ON...
         pin_len = 4
@@ -133,7 +136,6 @@ class LoginPage(ttk.Frame):
                 upgrade()
                 if upgrade() == 1:
                     self.pin = self.pin[:4] # OUR ENTERED 4-digit PIN - (result)
-                    self.l = True
                     # print(int(self.pin))
                     return 0
             elif ent_digit.keysym == "BackSpace":
@@ -197,7 +199,7 @@ class LoginPage(ttk.Frame):
                                 foreground=DANGER_COLOR)
                             self.pin = ""
                             for dot in dot_list:
-                                dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                                dot.config(text='〇', font=('Arial', 31), foreground="blue")
                             self.focus_set()
                         else:
                             usr.blocked = True
@@ -225,7 +227,7 @@ class MainMenu(ttk.Frame):
         for j in range(3): self.grid_columnconfigure(j, weight=1)
         self.current_user_label = ttk.Label(self, text="", style='SubTitle.TLabel', foreground=PRIMARY_COLOR)
         self.current_user_label.grid(row=0, column=0, columnspan=3, pady=40, sticky="n")
-        self.deposit_button = ttk.Button(self, text="💰 Deposit", style='Success.TButton',
+        self.deposit_button = ttk.Button(self, text="💰 Deposit", style='Primary.TButton',
                                          command=lambda: controller.show_frame("DepositPage", transition_time_ms=3000))
         self.deposit_button.grid(row=2, column=0, pady=20, padx=40, sticky="ew")
         self.transfer_button = ttk.Button(self, text="💸 Transfer", style='Primary.TButton',
