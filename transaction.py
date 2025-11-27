@@ -3,9 +3,17 @@ from datetime import datetime
 import json
 import sys
 
-with open("userslist.json", "r") as f:
-    data = json.load(f)
-users = data['users']
+from supabase import create_client
+
+url = "https://zumeulejkljiokmfhcrk.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bWV1bGVqa2xqaW9rbWZoY3JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMzAwNjIsImV4cCI6MjA3OTcwNjA2Mn0.oWXWPZT_aOefrnLQ4oaTFFgvI3MLHEo2MocrF492QZE"
+
+supabase = create_client(url, key)
+
+# Users select
+response = supabase.table("users").select("*").execute()
+users = response.data
+
 
 class BankAccount:
     def __init__(self, username: str, pin: int, balance: float, trnsct_list, wrong_tries = 0):
@@ -27,8 +35,8 @@ class BankAccount:
         users[ind]["balance"] = self.balance
         self.trnsct_list.append(
             f"{self.username} updated {amount} AZN. {self.username}'s current balance {self.balance} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        with open("userslist.json", 'w') as r:
-            json.dump({"users": users}, r, indent=2)
+        supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name", user).execute()
+
         return f"{self.username} updated {amount} AZN. Current balance {self.balance} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
     def transfer_money(self, recvr, trsmoney, ind, reind):
@@ -38,18 +46,13 @@ class BankAccount:
         if trsmoney > users[ind]["balance"]:
             return "You don't have enough balance!"
         self.balance -= trsmoney
-        users[ind]["balance"] -= trsmoney
-        users[reind]["balance"] += trsmoney
+        supabase.table("users").update({"balance": users[ind]["balance"]}).eq("name", sender_name).execute()
+        supabase.table("users").update({"balance": users[reind]["balance"]}).eq("name", receiver_name).execute()
+        supabase.table("users").update({
+            "transactions": users[ind]["transactions"] + [new_transaction]
+        }).eq("name", sender_name).execute()
 
-        users[ind]["transactions"].append(
-            f"{users[ind]['name']} sent {trsmoney} AZN to {recvr} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
-        users[reind]["transactions"].append(
-            f"{recvr} received {trsmoney} AZN from {users[ind]['name']} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
-
-        with open("userslist.json", "w") as f:
-            json.dump({"users": users}, f, indent=2)
+        supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name", user).execute()
 
         return "Transfer successful!"
 
@@ -59,8 +62,8 @@ class BankAccount:
         self.balance += amount
         users[ind]["balance"] = self.balance
         self.trnsct_list.append(f"You updated your balance {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        with open("userslist.json", 'w') as r:
-            json.dump({"users": users}, r, indent=2)
+        supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name", user).execute()
+
         return f"You updated your balance {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
     def withdraw_money(self, amount, ind):
@@ -72,8 +75,9 @@ class BankAccount:
             print("Operation was done succesfully")
             self.trnsct_list.append(
                 f"{self.username} took out {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            with open("userslist.json", 'w') as r:
-                json.dump({"users": users}, r, indent=2)
+            supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name",
+                                                                                                  user).execute()
+
             return f"{self.username} took out {amount} AZN. {self.username}'s current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
     def transaction(self):

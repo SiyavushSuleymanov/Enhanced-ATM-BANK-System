@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 from tkinter import Frame, ttk
-from PIL import Image
+from PIL import Image , ImageTk
 from transaction import BankAccount, users
 
 
@@ -12,8 +12,8 @@ DANGER_COLOR = "#dc3545"
 BACKGROUND_COLOR = "#f7f7f7"
 FOREGROUND_COLOR = "#333333"
 
-MAIN_FONT = ("Segoe UI", 16)
-TITLE_FONT = ("Segoe UI", 30, "bold")
+MAIN_FONT = ("Helvetica", 20)
+TITLE_FONT = ("Helvetica", 30, "bold")
 WINDOW_WIDTH = 1000
 WINDOW_HEIGHT = 800
 
@@ -46,7 +46,7 @@ class App(tk.Tk):
             image_path = "ufaz_vector_bg.png"
             original_image = Image.open(image_path)
             resized_image = original_image.resize((WINDOW_WIDTH, WINDOW_HEIGHT), Image.LANCZOS)
-            self.bg_image = Image.PhotoImage(resized_image)
+            self.bg_image = ImageTk.PhotoImage(resized_image)
             background_label = tk.Label(self, image=self.bg_image)
             background_label.image = self.bg_image
             background_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -107,15 +107,15 @@ class LoginPage(ttk.Frame):
         self.controller = controller
         for i in range(10): self.grid_rowconfigure(i, weight=1)
         for j in range(10): self.grid_columnconfigure(j, weight=1)
-        title = ttk.Label(self, text="Online ATM 💳", style='Title.TLabel')
+        title = ttk.Label(self, text="UFAZ BANK 💳", style='Title.TLabel')
         title.grid(row=1, column=1, columnspan=8, pady=50, sticky="n")
-        entered_username = ttk.Label(self, text="Username:", font=("Segoe UI", 18, "bold"))
+        entered_username = ttk.Label(self, text="Username :", font=("Segoe UI", 20, "bold"))
         entered_username.grid(row=3, column=2, columnspan=3, sticky="e", padx=10, pady=20)
-        self.usr = ttk.Entry(self, style='TEntry')
+        self.usr = ttk.Entry(self, style='TEntry',font=("Helvetica", 16, "bold"))
         self.usr.focus_set()
         self.usr.grid(row=3, column=5, columnspan=3, sticky="w", padx=10, pady=20)
         self.usr.bind("<Return>", self.login_user)
-        pin = ttk.Label(self, text="PIN:", font=("Segoe UI", 18, "bold"))
+        pin = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
         pin.grid(row=4, column=2, columnspan=3, sticky="e", padx=10, pady=20)
         login_button = ttk.Button(self, text="Login", command=self.login_user, style='Primary.TButton')
         login_button.grid(row=5, column=2, columnspan=6, pady=40, sticky="ew")
@@ -124,7 +124,6 @@ class LoginPage(ttk.Frame):
         self.pin = ""
     def login_user(self, k=0):
         self.usr.config(state="disabled")
-
         # WORKING ON...
         pin_len = 4
         def pressed(ent_digit):
@@ -222,26 +221,26 @@ class MainMenu(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
         for i in range(10): self.grid_rowconfigure(i, weight=1)
-        for j in range(3): self.grid_columnconfigure(j, weight=1)
+        for j in range(5): self.grid_columnconfigure(j, weight=1)
         self.current_user_label = ttk.Label(self, text="", style='SubTitle.TLabel', foreground=PRIMARY_COLOR)
-        self.current_user_label.grid(row=0, column=0, columnspan=3, pady=40, sticky="n")
-        self.deposit_button = ttk.Button(self, text="💰 Deposit", style='Success.TButton',
+        self.current_user_label.grid(row=0, column=1, columnspan=3, pady=40, sticky="n")
+        self.deposit_button = ttk.Button(self, text="💰 Deposit", style='Primary.TButton',
                                          command=lambda: controller.show_frame("DepositPage", transition_time_ms=3000))
-        self.deposit_button.grid(row=2, column=0, pady=20, padx=40, sticky="ew")
+        self.deposit_button.grid(row=2, column=1, pady=20, padx=40, sticky="ew")
         self.transfer_button = ttk.Button(self, text="💸 Transfer", style='Primary.TButton',
                                           command=lambda: controller.show_frame("TransferPage",
                                                                                 transition_time_ms=3000))
-        self.transfer_button.grid(row=2, column=2, pady=20, padx=40, sticky="ew")
+        self.transfer_button.grid(row=2, column=3, pady=20, padx=40, sticky="ew")
 
-        self.withdraw_button = ttk.Button(self, text="Withdraw", style='Danger.TButton',
+        self.withdraw_button = ttk.Button(self, text="Withdraw", style='Primary.TButton',
                                           command=lambda: controller.show_frame("WithdrawPage",
                                                                                 transition_time_ms=3000))
-        self.withdraw_button.grid(row=3, column=0, pady=20, padx=40, sticky="ew")
-        self.history_button = ttk.Button(self, text="History", style='Secondary.TButton',
+        self.withdraw_button.grid(row=3, column=1, pady=20, padx=40, sticky="ew")
+        self.history_button = ttk.Button(self, text="History", style='Primary.TButton',
                                          command=lambda: controller.show_frame("HistoryPage", transition_time_ms=3000))
-        self.history_button.grid(row=3, column=2, pady=20, padx=40, sticky="ew")
+        self.history_button.grid(row=3, column=3, pady=20, padx=40, sticky="ew")
         self.logout_button = ttk.Button(self, text="Log Out", style='Secondary.TButton', command=self.logout)
-        self.logout_button.grid(row=5, column=0, columnspan=3, pady=60, sticky="n")
+        self.logout_button.grid(row=5, column=1, columnspan=3, pady=60, sticky="n")
     def update_page(self):
         user = self.controller.current_user
         if user:
@@ -266,7 +265,7 @@ class DepositPage(ttk.Frame):
         self.balance_label = ttk.Label(self, text="")
         self.balance_label.grid(row=2, column=0, padx=40, pady=5, sticky="w")
         self.update_balance_button = ttk.Button(self, text="Show Balance", command=self.show_balance_func,
-                                                style='Secondary.TButton')
+                                                style='Primary.TButton')
         self.update_balance_button.grid(row=2, column=1, padx=20, pady=5, sticky="w")
         ttk.Label(self, text="Amount:", font=("Segoe UI", 18, "bold")).grid(row=4, column=0, padx=40, pady=30,
                                                                             sticky="e")
