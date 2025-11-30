@@ -497,17 +497,17 @@ class WithdrawPage(ttk.Frame):
         self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=3000))
     def show_balance_func(self):
         user = self.controller.current_user
-        self.balance_label.config(text=f"Balance: ${user.balance}")
+        self.balance_label.config(text=f"Balance: {user.balance} AZN")
 
     def update_page(self):
         user: BankAccount = self.controller.current_user
         if user:
             self.user_label.config(text=f"User: {user.username}")
-            self.balance_label.config(text="Balance: $******")
+            self.balance_label.config(text="Balance: ****** AZN")
             self.result_label.config(text="")
         else:
             self.user_label.config(text="User: N/A")
-            self.balance_label.config(text="Balance: $0")
+            self.balance_label.config(text="Balance: 0 AZN")
 
 
 app = App()
