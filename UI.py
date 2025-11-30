@@ -146,6 +146,7 @@ class LoginPage(ttk.Frame):
         register_button.grid(row=6, column=4, columnspan=3, pady=40, sticky="ew")
         self.error_label = ttk.Label(self, text="", foreground=DANGER_COLOR, background="white")
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
+        BankAccount.zero(self)
         self.pin_len = 4
         self.pin = ""
         self.dot_list = []
@@ -161,17 +162,22 @@ class LoginPage(ttk.Frame):
         self.bind('<Key>', self.pressed)
 
     def pressed(self, ent_digit):
-        play_click()
-        if ent_digit.keysym.isdigit() and len(self.pin) < self.pin_len:
-            self.pin += ent_digit.keysym
-            self.upgrade()
+        usr_input = self.usr.get().capitalize()
+        usr = BankAccount.get_user(usr_input)
+        if not usr.blocked:
+            play_click()
+            if ent_digit.keysym.isdigit() and len(self.pin) < self.pin_len:
+                self.pin += ent_digit.keysym
+                self.upgrade()
 
-        elif ent_digit.keysym == "BackSpace":
-            if len(self.pin) > 0:
-                self.delete()
-                self.pin = self.pin[:-1]
-            elif type(self.pin) == int:
-                pass
+            elif ent_digit.keysym == "BackSpace":
+                if len(self.pin) > 0:
+                    self.delete()
+                    self.pin = self.pin[:-1]
+                elif type(self.pin) == int:
+                    pass
+        else:
+            return
 
     def upgrade(self):
         try:
@@ -233,7 +239,7 @@ class LoginPage(ttk.Frame):
                     )
                     self.pin = ""
                     for dot in self.dot_list:
-                        dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                        dot.config(text='〇', font=('Arial', 31), foreground="blue")
                     self.focus_set()
                 else:
                     usr.blocked = True
