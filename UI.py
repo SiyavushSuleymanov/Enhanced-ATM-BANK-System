@@ -1,6 +1,7 @@
 import datetime
 import tkinter as tk
 from tkinter import Frame, ttk
+from PIL import Image
 
 from transaction import BankAccount, users
 
@@ -46,7 +47,7 @@ class App(tk.Tk):
             image_path = "ufaz_vector_bg.png"
             original_image = Image.open(image_path)
             resized_image = original_image.resize((WINDOW_WIDTH, WINDOW_HEIGHT), Image.LANCZOS)
-            self.bg_image = ImageTk.PhotoImage(resized_image)
+            self.bg_image = Image.PhotoImage(resized_image)
             background_label = tk.Label(self, image=self.bg_image)
             background_label.image = self.bg_image
             background_label.place(x=0, y=0, relwidth=1, relheight=1)

@@ -1,19 +1,28 @@
-
 from datetime import datetime
 import json
-import sys
-
 from supabase import create_client
 
 url = "https://zumeulejkljiokmfhcrk.supabase.co"
 key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bWV1bGVqa2xqaW9rbWZoY3JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMzAwNjIsImV4cCI6MjA3OTcwNjA2Mn0.oWXWPZT_aOefrnLQ4oaTFFgvI3MLHEo2MocrF492QZE"
-
 supabase = create_client(url, key)
 
-# Users select
-response = supabase.table("users").select("*").execute()
-users = response.data
+with open("userslist.json", "r") as f:
+    data = json.load(f)
 
+for u in data["users"]:
+    existing = supabase.table("users").select("name").eq("name", u["name"]).execute()
+    if not existing.data:
+        supabase.table("users").insert({
+            "name": u["name"],
+            "pin": u["pin"],
+            "balance": u["balance"],
+            "transactions": u["transactions"],
+            "wrong_tries": u["wrong_tries"],
+            "blocked": u["blocked"]
+        }).execute()
+
+
+users = data["users"]
 
 class BankAccount:
     def __init__(self, username: str, pin: int, balance: float, trnsct_list, wrong_tries = 0):
@@ -24,70 +33,70 @@ class BankAccount:
         self.wrong_tries = wrong_tries
         self.blocked = False
 
-    def get_user(self):
-        return self.username
+    def get_user_from_db(name):
+        res = supabase.table("users").select("*").eq("name", name).execute()
+        if res.data:
+            return res.data[0]
+        return None
 
     def show_balance(self):
         return self.balance
 
-    def updt_balance(self, amount, ind):
-        self.balance += amount
-        users[ind]["balance"] = self.balance
-        self.trnsct_list.append(
-            f"{self.username} updated {amount} AZN. {self.username}'s current balance {self.balance} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name", user).execute()
-
-        return f"{self.username} updated {amount} AZN. Current balance {self.balance} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-
-    def transfer_money(self, recvr, trsmoney, ind, reind):
-        from datetime import datetime
-        import json
-
-        if trsmoney > users[ind]["balance"]:
-            return "You don't have enough balance!"
-        self.balance -= trsmoney
-        supabase.table("users").update({"balance": users[ind]["balance"]}).eq("name", sender_name).execute()
-        supabase.table("users").update({"balance": users[reind]["balance"]}).eq("name", receiver_name).execute()
+    @staticmethod
+    def update_balance(name, new_balance, transactions):
         supabase.table("users").update({
-            "transactions": users[ind]["transactions"] + [new_transaction]
-        }).eq("name", sender_name).execute()
+            "balance": new_balance,
+            "transactions": transactions
+        }).eq("name", name).execute()
 
-        supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name", user).execute()
+    def transfer_money(self, receiver, amount):
+        if amount > self.balance:
+            return "Not enough balance"
+        self.balance -= amount
+        self.trnsct_list.append(
+            f"{self.username} sent {amount} AZN to {receiver.username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        receiver.balance += amount
+        receiver.trnsct_list.append(
+            f"{receiver.username} received {amount} AZN from {self.username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        supabase.table("users").update({
+            "balance": self.balance,
+            "transactions": self.trnsct_list
+        }).eq("name", self.username).execute()
+
+        supabase.table("users").update({
+            "balance": receiver.balance,
+            "transactions": receiver.trnsct_list
+        }).eq("name", receiver.username).execute()
 
         return "Transfer successful!"
 
-
-
-    def deposit_money(self, amount, ind):
+    def deposit(self, amount):
         self.balance += amount
-        users[ind]["balance"] = self.balance
-        self.trnsct_list.append(f"You updated your balance {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name", user).execute()
+        self.trnsct_list.append(
+            f"You updated your balance {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        BankAccount.update_balance(self.username, self.balance, self.trnsct_list)
 
-        return f"You updated your balance {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-
-    def withdraw_money(self, amount, ind):
+    def withdraw_money(self, amount):
         if amount > self.balance:
-            return "Your balance is low"
-        else:
-            self.balance -= amount
-            users[ind]["balance"] = self.balance
-            print("Operation was done succesfully")
-            self.trnsct_list.append(
-                f"{self.username} took out {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            supabase.table("users").update({"balance": new_balance, "transactions": new_list}).eq("name",
-                                                                                                  user).execute()
+            return "Your balance is too low"
+        self.balance -= amount
+        self.trnsct_list.append(
+            f"{self.username} withdrew {amount} AZN. Your current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        supabase.table("users").update({
+            "balance": self.balance,
+            "transactions": self.trnsct_list
+        }).eq("name", self.username).execute()
 
-            return f"{self.username} took out {amount} AZN. {self.username}'s current balance {self.balance} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        return f"You withdrew {amount} AZN. New balance: {self.balance} AZN"
 
     def transaction(self):
         for tr in self.trnsct_list[:-1]:
             print(tr)
         return self.trnsct_list[-1]
-
-    def exit(self):
-        print("Successfully finished!")
-        sys.exit()
 
 '''
 #LOGIN
