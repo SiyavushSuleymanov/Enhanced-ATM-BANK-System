@@ -209,11 +209,16 @@ class LoginPage(ttk.Frame):
 
         if len(self.pin) != 4:
             self.error_label.config(text="❗ Enter 4-digit PIN", foreground=DANGER_COLOR)
+            self.focus_set()
             return
 
         try:
             if self.pin == str(usr.pin):
                 usr.wrong_tries = 0
+                self.pin = ""
+                for dot in self.dot_list:
+                    dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                self.focus_set()
                 usr.update_db()
                 self.controller.current_user = usr
                 self.usr.delete(0, tk.END)
