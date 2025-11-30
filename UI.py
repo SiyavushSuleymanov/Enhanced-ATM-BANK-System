@@ -137,7 +137,7 @@ class LoginPage(ttk.Frame):
         self.usr = ttk.Entry(self, style='TEntry',font=("Helvetica", 16, "bold"))
         self.usr.focus_set()
         self.usr.grid(row=3, column=5, columnspan=3, sticky="w", padx=10, pady=20)
-        self.usr.bind("<Return>", self.login_user)
+        self.usr.bind("<Return>", lambda e: self.focus_set())
         pin = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
         pin.grid(row=4, column=2, columnspan=3, sticky="e", padx=10, pady=20)
         login_button = ttk.Button(self, text="Login", command=self.login_user, style='Primary.TButton')
@@ -146,59 +146,52 @@ class LoginPage(ttk.Frame):
         register_button.grid(row=6, column=4, columnspan=3, pady=40, sticky="ew")
         self.error_label = ttk.Label(self, text="", foreground=DANGER_COLOR, background="white")
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
+        self.pin_len = 4
         self.pin = ""
+        self.dot_list = []
+
+        frm = ttk.Frame(self)
+        frm.grid(row=4, column=3, columnspan=5, padx=10, pady=20)
+        for _ in range(self.pin_len):
+            dot = ttk.Label(frm, text='〇', font=('Arial', 30), foreground="blue")
+            dot.pack(side="left")
+            self.dot_list.append(dot)
+
+        self.focus_set()
+        self.bind('<Key>', self.pressed)
+
+    def pressed(self, ent_digit):
+        play_click()
+        if ent_digit.keysym.isdigit() and len(self.pin) < self.pin_len:
+            self.pin += ent_digit.keysym
+            self.upgrade()
+
+        elif ent_digit.keysym == "BackSpace":
+            if len(self.pin) > 0:
+                self.delete()
+                self.pin = self.pin[:-1]
+            elif type(self.pin) == int:
+                pass
+
+    def upgrade(self):
+        try:
+            if len(self.pin) <= self.pin_len:
+                self.dot_list[len(self.pin) - 1].config(text='◉', font=("Arial", 30), foreground="blue")
+            if len(self.pin) == self.pin_len:
+                return 1
+        except IndexError:
+            pass
+
+    def delete(self):
+        if len(self.pin) <= self.pin_len:
+            self.dot_list[len(self.pin) - 1].config(text='〇', font=("Arial", 30), foreground="blue")
 
     def open_register_page(self):
         url = "https://google.com"
         webbrowser.open(url)
 
     def login_user(self, k=0):
-        if self.usr['state'] == 'active':
-            self.usr.config(state="disabled")
-        elif self.usr['state'] == 'disabled':
-            self.usr.config(state='active')
-        # WORKING ON...
-        pin_len = 4
-        def pressed(ent_digit):
-            play_click()
-            if ent_digit.keysym.isdigit() and len(str(self.pin)) != 4:
-                self.pin += ent_digit.keysym
-                upgrade()
-                if upgrade() == 1:
-                    self.pin = self.pin[:4] # OUR ENTERED 4-digit PIN - (result)
-                    self.l = True
-                    # print(int(self.pin))
-                    return 0
-            elif ent_digit.keysym == "BackSpace":
-                if type(self.pin) == str:
-                    delete()
-                    self.pin = self.pin[:-1]
-                elif type(self.pin) == int:
-                    pass
-
-        def upgrade(): # Upgrades dot list
-            try:
-                if len(self.pin) <= pin_len:
-                    dot_list[len(self.pin) - 1].config(text='◉', font=("Arial", 30), foreground="blue")
-                if len(self.pin) == pin_len:
-                    return 1
-            except IndexError:
-                pass
-
-        def delete():
-            if len(self.pin) <= pin_len:
-                dot_list[len(self.pin) - 1].config(text='〇', font=("Arial", 30), foreground="blue")
-
-        frm = ttk.Frame(self)
-        frm.grid(row=4, column=3, columnspan=5, padx=10, pady=20)
-        dot_list = []
-        for _ in range(pin_len):
-            dot = ttk.Label(frm, text='〇', font=('Arial', 30), foreground="blue")
-            dot.pack(side="left")
-            dot_list.append(dot)
-
-        self.focus_set()
-        self.bind('<Key>', pressed)
+        self.usr.config(state="active")
         # WORKING ON...
 
         usr_input = self.usr.get().capitalize()
@@ -214,8 +207,12 @@ class LoginPage(ttk.Frame):
             self.error_label.config(text="❌ Card is blocked", foreground=DANGER_COLOR)
             return
 
+        if len(self.pin) != 4:
+            self.error_label.config(text="❗ Enter 4-digit PIN", foreground=DANGER_COLOR)
+            return
+
         try:
-            if int(self.pin) == usr.pin:
+            if self.pin == str(usr.pin):
                 usr.wrong_tries = 0
                 usr.update_db()
                 self.controller.current_user = usr
@@ -230,7 +227,7 @@ class LoginPage(ttk.Frame):
                         foreground=DANGER_COLOR
                     )
                     self.pin = ""
-                    for dot in dot_list:
+                    for dot in self.dot_list:
                         dot.config(text='〇', font=('Arial', 30), foreground="blue")
                     self.focus_set()
                 else:
@@ -238,8 +235,8 @@ class LoginPage(ttk.Frame):
                     usr.update_db()
                     self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
                     self.pin = ""
-                    for dot in dot_list:
-                        dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                    for dot in self.dot_list:
+                        dot.config(text='〇', font=('Arial', 31), foreground="blue")
                     self.focus_set()
         except ValueError:
             pass
