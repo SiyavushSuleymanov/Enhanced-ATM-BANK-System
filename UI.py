@@ -189,7 +189,6 @@ class App(tk.Tk):
         for frame in self.frames.values():
             if hasattr(frame, "update_labels"):
                 frame.update_labels()
-
     def show_frame(self, page_name, transition_time_ms=0):
         self.current_frame_name = page_name
         frame = self.frames[page_name]
