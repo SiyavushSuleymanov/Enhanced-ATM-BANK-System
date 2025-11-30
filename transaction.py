@@ -34,6 +34,7 @@ class BankAccount:
             f"{self.username} deposited {amount} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
         self.update_balance()
+        self.update_db()
         return f"Deposit successful! Balance: {self.balance} AZN"
 
     def withdraw(self, amount):

@@ -124,7 +124,10 @@ class LoginPage(ttk.Frame):
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
         self.pin = ""
     def login_user(self, k=0):
-        self.usr.config(state="disabled")
+        if self.usr['state'] == 'active':
+            self.usr.config(state="disabled")
+        elif self.usr['state'] == 'disabled':
+            self.usr.config(state='active')
         # WORKING ON...
         pin_len = 4
         def pressed(ent_digit):
@@ -285,30 +288,30 @@ class DepositPage(ttk.Frame):
         except ValueError:
             self.result_label.config(text="❌ Invalid amount format.", foreground=DANGER_COLOR)
             return
+
         from transaction import BankAccount
-        BankAccount.deposit_money(self.controller.current_user, amount_val, self.current_user_ind)
+        user = self.controller.current_user
+        BankAccount.deposit(user, amount_val)
         self.amount.delete(0, tk.END)
         self.balance_label.config(text=f"Balance: $******")
         self.result_label.config(text=f"✅ Deposit successful: ${amount_val}", foreground=SUCCESS_COLOR)
         self.controller.current_user = None
         self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=3000))
+
     def show_balance_func(self):
         user = self.controller.current_user
         self.balance_label.config(text=f"Balance: ${user.balance}")
     def update_page(self):
         user = self.controller.current_user
         if user:
-            from transaction import users
-            for i in range(len(users)):
-                if users[i]["name"] == user.username:
-                    self.current_user_ind = i
-                    break
-            self.current_user_label.config(text=f"User: {user.username}")
-            self.balance_label.config(text="Balance: $******")
-            self.result_label.config(text="")  # Mesajları təmizlə
-        else:
-            self.current_user_label.config(text="User: Guest")
-            self.balance_label.config(text="Balance: $0")
+            user = self.controller.current_user
+            if user:
+                self.current_user_label.config(text=f"User: {user.username}")
+                self.balance_label.config(text="Balance: $******")
+                self.result_label.config(text="")
+            else:
+                self.current_user_label.config(text="User: Guest")
+                self.balance_label.config(text="Balance: $0")
 
 
 class TransferPage(ttk.Frame):
@@ -482,7 +485,7 @@ class WithdrawPage(ttk.Frame):
             self.result_label.config(text="❌ Invalid amount format.", foreground=DANGER_COLOR)
             return
         from transaction import BankAccount
-        result = user.withdraw_money(amount)
+        result = user.withdraw(amount)
 
         if result.startswith("Withdraw successful"):
             self.balance_label.config(text=f"Balance: $******")
