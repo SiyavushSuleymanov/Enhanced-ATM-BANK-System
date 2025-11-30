@@ -10,6 +10,99 @@ from PIL import Image,ImageTk
 from transaction import BankAccount
 
 
+
+LANGUAGES = {
+    "ENG": {
+        "username": "Username",
+        "pin": "PIN",
+        "login": "Login",
+        "register": "Register",
+        "user_not_found": "User not found",
+        "card_blocked": "Card is blocked",
+        "enter_pin": "Enter 4-digit PIN",
+        "incorrect_pin": "Incorrect PIN ({tries} tries left)",
+        "max_tries_blocked": "Card is blocked (Max tries exceeded)",
+        "welcome": "Welcome, {username} 👋",
+        "deposit": "Deposit",
+        "withdraw": "Withdraw",
+        "transfer": "Transfer",
+        "history": "History",
+        "logout": "Log Out",
+        "amount": "Amount",
+        "receiver": "Receiver",
+        "show_balance": "Show Balance",
+        "main_menu": "Main Menu",
+        "deposit_success": "Deposit successful",
+        "invalid_amount": "Please enter a valid amount.",
+        "invalid_amount_format": "Invalid amount format.",
+        "withdraw_success": "Withdraw successful",
+        "transfer_success": "Transfer successful",
+        "transfer_invalid": "Invalid transfer",
+        "cannot_transfer_self": "Cannot transfer to self",
+        "no_transactions": "No transactions yet."
+    },
+    "RUS": {
+        "username": "Имя пользователя",
+        "pin": "ПИН",
+        "login": "Войти",
+        "register": "Регистрация",
+        "user_not_found": "Пользователь не найден",
+        "card_blocked": "Карта заблокирована",
+        "enter_pin": "Введите 4-значный ПИН",
+        "incorrect_pin": "Неверный ПИН ({tries} попытки осталось)",
+        "max_tries_blocked": "Карта заблокирована (Превышено число попыток)",
+        "welcome": "Добро пожаловать, {username} 👋",
+        "deposit": "Внести",
+        "withdraw": "Снять",
+        "transfer": "Перевести",
+        "history": "История",
+        "logout": "Выйти",
+        "amount": "Сумма",
+        "receiver": "Получатель",
+        "show_balance": "Показать баланс",
+        "main_menu": "Главное меню",
+        "deposit_success": "Внесение успешно",
+        "invalid_amount": "Пожалуйста, введите корректную сумму.",
+        "invalid_amount_format": "Неверный формат суммы.",
+        "withdraw_success": "Снятие успешно",
+        "transfer_success": "Перевод успешно",
+        "transfer_invalid": "Неверный перевод",
+        "cannot_transfer_self": "Нельзя перевести самому себе",
+        "no_transactions": "Нет операций."
+    },
+    "AZE": {
+        "username": "İstifadəçi adı",
+        "pin": "PIN",
+        "login": "Daxil ol",
+        "register": "Qeydiyyat",
+        "user_not_found": "İstifadəçi tapılmadı",
+        "card_blocked": "Kart bloklanıb",
+        "enter_pin": "4 rəqəmli PIN daxil edin",
+        "incorrect_pin": "Səhv PIN ({tries} cəhd qalıb)",
+        "max_tries_blocked": "Kart bloklanıb (Maksimum cəhd keçdi)",
+        "welcome": "Xoş gəlmisiniz, {username} 👋",
+        "deposit": "Əmanət",
+        "withdraw": "Çıxarış",
+        "transfer": "Köçürmə",
+        "history": "Tarixçə",
+        "logout": "Çıxış",
+        "amount": "Məbləğ",
+        "receiver": "Alıcı",
+        "show_balance": "Balansı göstər",
+        "main_menu": "Əsas menyu",
+        "deposit_success": "Əmanət uğurla əlavə edildi",
+        "invalid_amount": "Zəhmət olmasa düzgün məbləğ daxil edin.",
+        "invalid_amount_format": "Məbləğ formatı düzgün deyil.",
+        "withdraw_success": "Çıxarış uğurla edildi",
+        "transfer_success": "Köçürmə uğurla edildi",
+        "transfer_invalid": "Yanlış köçürmə",
+        "cannot_transfer_self": "Özünüzə köçürə bilməzsiniz",
+        "no_transactions": "Hələ əməliyyat yoxdur."
+    }
+}
+
+
+
 PRIMARY_COLOR = "#007BFF"
 SECONDARY_COLOR = "#6c757d"
 SUCCESS_COLOR = "#28a745"
@@ -44,6 +137,7 @@ class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.current_user = None
+        self.language = "ENG"
         self.frames = {}
         play_ambiance()
         self.style = ttk.Style(self)
@@ -89,23 +183,20 @@ class App(tk.Tk):
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky='nsew')
         self.show_frame("LoginPage")
+
+    def set_language(self, lang_code):
+        self.language = lang_code
+        for frame in self.frames.values():
+            if hasattr(frame, "update_labels"):
+                frame.update_labels()
+
     def show_frame(self, page_name, transition_time_ms=0):
-        if transition_time_ms > 0:
-            loading_frame = self.frames["LoadingPage"]
-            if hasattr(loading_frame, "update_page"):
-                loading_frame.update_page()
-            loading_frame.tkraise()
-            def switch_to_target():
-                frame = self.frames[page_name]
-                if hasattr(frame, "update_page"):
-                    frame.update_page()
-                frame.tkraise()
-            self.after(transition_time_ms, switch_to_target)
-        else:
-            frame = self.frames[page_name]
-            if hasattr(frame, "update_page"):
-                frame.update_page()
-            frame.tkraise()
+        self.current_frame_name = page_name
+        frame = self.frames[page_name]
+        if hasattr(frame, "update_page"):
+            frame.update_page()
+        frame.tkraise()
+
 
 class LoadingPage(ttk.Frame):
     def __init__(self, parent, controller):
@@ -128,30 +219,51 @@ class LoginPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
+        self.lang_var = tk.StringVar(value="ENG")  # default
+
+        lang_choice = ttk.Combobox(
+            self,
+            textvariable=self.lang_var,
+            values=["ENG", "RUS", "AZE"],
+            state="readonly",
+            width=5,
+            font=("Segoe UI", 12, "bold")
+        )
+        lang_choice.grid(row=7, column=8, padx=20, pady=20, sticky="ne")
+        lang_choice.bind("<<ComboboxSelected>>", self.change_language)
+
         for i in range(10): self.grid_rowconfigure(i, weight=1)
         for j in range(10): self.grid_columnconfigure(j, weight=1)
-        title = ttk.Label(self, text="UFAZ BANK 💳", style='Title.TLabel')
-        title.grid(row=1, column=1, columnspan=8, pady=50, sticky="n")
-        entered_username = ttk.Label(self, text="Username :", font=("Segoe UI", 20, "bold"))
-        entered_username.grid(row=3, column=2, columnspan=3, sticky="e", padx=10, pady=20)
-        self.usr = ttk.Entry(self, style='TEntry',font=("Helvetica", 16, "bold"))
+
+        self.title_label = ttk.Label(self, text="UFAZ BANK 💳", style='Title.TLabel')
+        self.title_label.grid(row=1, column=1, columnspan=8, pady=50, sticky="n")
+
+        self.username_label = ttk.Label(self, text="Username :", font=("Segoe UI", 20, "bold"))
+        self.username_label.grid(row=3, column=2, columnspan=2, sticky="e", padx=10, pady=20)
+
+        self.usr = ttk.Entry(self, style='TEntry', font=("Helvetica", 16, "bold"))
         self.usr.focus_set()
         self.usr.grid(row=3, column=5, columnspan=3, sticky="w", padx=10, pady=20)
         self.usr.bind("<Return>", lambda e: self.focus_set())
-        pin = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
-        pin.grid(row=4, column=2, columnspan=3, sticky="e", padx=10, pady=20)
-        login_button = ttk.Button(self, text="Login", command=self.login_user, style='Primary.TButton')
-        login_button.grid(row=5, column=2, columnspan=6, pady=40, sticky="ew")
-        register_button = ttk.Button(self, text="Register", command=self.open_register_page, style='Secondary.TButton')
-        register_button.grid(row=6, column=4, columnspan=3, pady=40, sticky="ew")
+
+        self.pin_label = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
+        self.pin_label.grid(row=4, column=1, columnspan=4, sticky="e", padx=7, pady=20)
+
+        self.login_button = ttk.Button(self, text="Login", command=self.login_user, style='Primary.TButton')
+        self.login_button.grid(row=5, column=2, columnspan=6, pady=40, sticky="ew")
+
+        self.register_button = ttk.Button(self, text="Register", command=self.open_register_page,
+                                          style='Secondary.TButton')
+        self.register_button.grid(row=6, column=3, columnspan=4, pady=40, sticky="ew")
+
         self.error_label = ttk.Label(self, text="", foreground=DANGER_COLOR, background="white")
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
+
         self.pin_len = 4
         self.pin = ""
         self.dot_list = []
-
         frm = ttk.Frame(self)
-        frm.grid(row=4, column=3, columnspan=5, padx=10, pady=20)
+        frm.grid(row=4, column=4, columnspan=3, padx=10, pady=20)
         for _ in range(self.pin_len):
             dot = ttk.Label(frm, text='〇', font=('Arial', 30), foreground="blue")
             dot.pack(side="left")
@@ -159,6 +271,18 @@ class LoginPage(ttk.Frame):
 
         self.focus_set()
         self.bind('<Key>', self.pressed)
+
+    def change_language(self, event=None):
+        selected_lang = self.lang_var.get()
+        self.controller.set_language(selected_lang)
+        self.update_labels()
+
+    def update_labels(self):
+        lang = LANGUAGES[self.controller.language]
+        self.username_label.config(text=f"{lang['username']} :")
+        self.pin_label.config(text=f"{lang['pin']} :")
+        self.login_button.config(text=lang['login'])
+        self.register_button.config(text=lang['register'])
 
     def pressed(self, ent_digit):
         play_click()
@@ -192,7 +316,7 @@ class LoginPage(ttk.Frame):
 
     def login_user(self, k=0):
         self.usr.config(state="active")
-        # WORKING ON...
+
 
         usr_input = self.usr.get().capitalize()
         self.error_label.config(text="")
@@ -249,8 +373,6 @@ class MainMenu(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
-
-        # --- ICONS LOAD ---
         self.deposit_icon = ImageTk.PhotoImage(Image.open("deposit.png").resize((32, 32)))
         self.transfer_icon = ImageTk.PhotoImage(Image.open("transfer_money.png").resize((32, 32)))
         self.withdraw_icon = ImageTk.PhotoImage(Image.open("withdraw.png").resize((32, 32)))
@@ -265,14 +387,14 @@ class MainMenu(ttk.Frame):
         self.current_user_label.grid(row=2, column=1, columnspan=3, pady=40, sticky="n")
 
         self.deposit_button = ttk.Button(
-            self, text="   Deposit", image=self.deposit_icon, compound="left",
+            self, text="", image=self.deposit_icon, compound="left",
             style='Primary.TButton',
             command=lambda: controller.show_frame("DepositPage", transition_time_ms=3000)
         )
         self.deposit_button.grid(row=3, column=1, pady=20, padx=40, sticky="ew")
 
         self.transfer_button = ttk.Button(
-            self, text="   Transfer", image=self.transfer_icon, compound="left",
+            self, text="", image=self.transfer_icon, compound="left",
             style='Primary.TButton',
             command=lambda: controller.show_frame("TransferPage", transition_time_ms=3000)
         )
@@ -280,7 +402,7 @@ class MainMenu(ttk.Frame):
 
 
         self.withdraw_button = ttk.Button(
-            self, text="   Withdraw", image=self.withdraw_icon, compound="left",
+            self, text="", image=self.withdraw_icon, compound="left",
             style='Primary.TButton',
             command=lambda: controller.show_frame("WithdrawPage", transition_time_ms=3000)
         )
@@ -288,7 +410,7 @@ class MainMenu(ttk.Frame):
 
 
         self.history_button = ttk.Button(
-            self, text="   History", image=self.history_icon, compound="left",
+            self, text="", image=self.history_icon, compound="left",
             style='Primary.TButton',
             command=lambda: controller.show_frame("HistoryPage", transition_time_ms=3000)
         )
@@ -296,173 +418,300 @@ class MainMenu(ttk.Frame):
 
 
         self.logout_button = ttk.Button(
-            self, text="   Log Out", compound="left",
+            self, text="", compound="left",
             style='Secondary.TButton',
             command=self.logout
         )
         self.logout_button.grid(row=5, column=1, columnspan=3, pady=60, sticky="n")
+        self.update_labels()
+    def update_labels(self):
+        lang = LANGUAGES[self.controller.language]
+        self.deposit_button.config(text=f"   {lang['deposit']}")
+        self.transfer_button.config(text=f"   {lang['transfer']}")
+        self.withdraw_button.config(text=f"   {lang['withdraw']}")
+        self.history_button.config(text=f"   {lang['history']}")
+        self.logout_button.config(text=f"   {lang['logout']}")
 
-    def update_page(self):
         user = self.controller.current_user
         if user:
-            self.current_user_label.config(text=f"Welcome, {user.username} 👋")
+            self.current_user_label.config(text=lang['welcome'].format(username=user.username))
         else:
-            self.current_user_label.config(text="Welcome, Guest")
+            self.current_user_label.config(text=lang['welcome'].format(username="Guest"))
+
+    def update_page(self):
+
+        lang = LANGUAGES[self.controller.language]
+        user = self.controller.current_user
+        if user:
+            self.current_user_label.config(text=lang['welcome'].format(username=user.username))
+        else:
+            self.current_user_label.config(text=lang['welcome'].format(username="Guest"))
     def logout(self):
         self.controller.current_user = None
         self.controller.show_frame("LoginPage", transition_time_ms=1500)
+
 
 class DepositPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
+
         for i in range(10): self.grid_rowconfigure(i, weight=1)
         for j in range(4): self.grid_columnconfigure(j, weight=1)
-        ttk.Label(self, text="Deposit Money", style='SubTitle.TLabel', foreground=SUCCESS_COLOR).grid(row=0, column=0,
-                                                                                                      columnspan=4,
-                                                                                                      padx=20, pady=30,
-                                                                                                      sticky="n")
+
+        self.title_label = ttk.Label(self, text="", style='SubTitle.TLabel', foreground=SUCCESS_COLOR)
+        self.title_label.grid(row=0, column=0, columnspan=4, padx=20, pady=30, sticky="n")
+
         self.current_user_label = ttk.Label(self, text="")
         self.current_user_label.grid(row=1, column=0, columnspan=2, padx=40, pady=10, sticky="w")
+
         self.balance_label = ttk.Label(self, text="")
         self.balance_label.grid(row=2, column=0, padx=40, pady=5, sticky="w")
-        self.update_balance_button = ttk.Button(self, text="Show Balance", command=self.show_balance_func,
-                                                style='Primary.TButton')
+
+        self.update_balance_button = ttk.Button(self, text="", command=self.show_balance_func, style='Primary.TButton')
         self.update_balance_button.grid(row=2, column=1, padx=20, pady=5, sticky="w")
-        ttk.Label(self, text="Amount:", font=("Jost", 18, "bold")).grid(row=4, column=0, padx=40, pady=30,
-                                                                            sticky="e")
+
+        self.amount_label = ttk.Label(self, text="", font=("Jost", 18, "bold"))
+        self.amount_label.grid(row=4, column=0, padx=40, pady=30, sticky="e")
+
         self.amount = ttk.Entry(self, style='TEntry')
         self.amount.grid(row=4, column=1, columnspan=2, padx=20, pady=30, sticky="ew")
-        deposit_button_style = {'style': 'Success.TButton'}
-        self.deposit_button = ttk.Button(self, text="Deposit", command=self.deposit_action, **deposit_button_style)
+
+        self.deposit_button = ttk.Button(self, text="", command=self.deposit_action, style='Success.TButton')
         self.deposit_button.grid(row=5, column=0, columnspan=4, pady=20, padx=20, sticky="ew")
-        self.MainMenu_button = ttk.Button(self, text="← Main Menu", command=lambda: controller.show_frame("MainMenu"),
+
+        self.MainMenu_button = ttk.Button(self, text="", command=lambda: controller.show_frame("MainMenu"),
                                           style='Secondary.TButton')
         self.MainMenu_button.grid(row=8, column=0, columnspan=4, pady=50, padx=20, sticky="ew")
+
         self.result_label = ttk.Label(self, text="")
         self.result_label.grid(row=6, column=0, columnspan=4, sticky="n")
 
+        self.update_labels()
+        self.update_page()
+
+    def update_labels(self):
+        lang = LANGUAGES[self.controller.language]
+        self.title_label.config(text=lang['deposit'])
+        self.amount_label.config(text=f"{lang['amount']}:")
+        self.deposit_button.config(text=lang['deposit'])
+        self.update_balance_button.config(text=lang.get('show_balance', 'Show Balance'))
+        self.MainMenu_button.config(text=f"← {lang.get('main_menu', 'Main Menu')}")
+
+    def update_page(self):
+        user = self.controller.current_user
+        lang = LANGUAGES[self.controller.language]
+        if user:
+            self.current_user_label.config(text=f"{lang['welcome'].format(username=user.username)}")
+            self.balance_label.config(text=f"{lang['amount']}: ******")
+        else:
+            self.current_user_label.config(text=f"{lang['welcome'].format(username='Guest')}")
+            self.balance_label.config(text=f"{lang['amount']}: 0")
+        self.result_label.config(text="")
+        self.amount.delete(0, tk.END)
+
     def deposit_action(self):
+        user = self.controller.current_user
+        lang = LANGUAGES[self.controller.language]
+
         try:
             amount_val = float(self.amount.get())
             if amount_val <= 0:
-                self.result_label.config(text="❌ Please enter a valid amount.", foreground=DANGER_COLOR)
+                self.result_label.config(text=f"❌ {lang.get('invalid_amount')}", foreground=DANGER_COLOR)
                 return
         except ValueError:
-            self.result_label.config(text="❌ Invalid amount format.", foreground=DANGER_COLOR)
+            self.result_label.config(text=f"❌ {lang.get('invalid_amount_format')}", foreground=DANGER_COLOR)
             return
 
         from transaction import BankAccount
-        user = self.controller.current_user
         BankAccount.deposit(user, amount_val)
         self.amount.delete(0, tk.END)
-        self.balance_label.config(text=f"Balance: $******")
-        self.result_label.config(text=f"✅ Deposit successful: ${amount_val}", foreground=SUCCESS_COLOR)
-        self.controller.current_user = None
-        self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=3000))
+        play_success()
+
+
+        self.controller.show_frame("LoadingPage")
+        self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
 
     def show_balance_func(self):
         user = self.controller.current_user
-        self.balance_label.config(text=f"Balance: ${user.balance}")
+        lang = LANGUAGES[self.controller.language]
+        if user:
+            self.balance_label.config(text=f"{lang.get('amount')}: ${user.balance}")
+        else:
+            self.balance_label.config(text=f"{lang.get('amount')}: $0")
+
+
+
+class WithdrawPage(ttk.Frame):
+    def __init__(self, parent, controller):
+        ttk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        for i in range(10): self.grid_rowconfigure(i, weight=1)
+        for j in range(4): self.grid_columnconfigure(j, weight=1)
+
+        self.title_label = ttk.Label(self, text="", style='SubTitle.TLabel', foreground=DANGER_COLOR)
+        self.title_label.grid(row=0, column=0, columnspan=4, padx=20, pady=30, sticky="n")
+
+        self.user_label = ttk.Label(self, text="")
+        self.user_label.grid(row=1, column=0, columnspan=2, padx=40, pady=10, sticky="w")
+        self.balance_label = ttk.Label(self, text="")
+        self.balance_label.grid(row=2, column=0, padx=40, pady=5, sticky="w")
+        self.show_balance_button = ttk.Button(self, text="", command=self.show_balance_func, style='Secondary.TButton')
+        self.show_balance_button.grid(row=2, column=1, padx=20, pady=5, sticky="w")
+
+        self.amount_label = ttk.Label(self, text="")
+        self.amount_label.grid(row=4, column=0, padx=40, pady=30, sticky="e")
+        self.amount = ttk.Entry(self, style='TEntry')
+        self.amount.grid(row=4, column=1, columnspan=2, padx=20, pady=30, sticky="ew")
+
+        self.result_label = ttk.Label(self, text="")
+        self.result_label.grid(row=6, column=0, columnspan=4, sticky="n")
+
+        self.withdraw_button = ttk.Button(self, text="", command=self.withdraw_action, style='Danger.TButton')
+        self.withdraw_button.grid(row=5, column=0, columnspan=4, pady=20, padx=20, sticky="ew")
+
+        self.back_button = ttk.Button(self, text="", command=lambda: controller.show_frame("MainMenu"), style='Secondary.TButton')
+        self.back_button.grid(row=8, column=0, columnspan=4, pady=50, padx=20, sticky="ew")
+
+        self.update_labels()
+
+    def update_labels(self):
+        lang = LANGUAGES[self.controller.language]
+        self.title_label.config(text=lang['withdraw'])
+        self.amount_label.config(text=f"{lang['amount']}:")
+        self.withdraw_button.config(text=lang['withdraw'])
+        self.show_balance_button.config(text=lang['show_balance'])
+        self.back_button.config(text=f"← {lang['main_menu']}")
+        self.update_page()
+
     def update_page(self):
         user = self.controller.current_user
+        lang = LANGUAGES[self.controller.language]
         if user:
-            user = self.controller.current_user
-            if user:
-                self.current_user_label.config(text=f"User: {user.username}")
-                self.balance_label.config(text="Balance: $******")
-                self.result_label.config(text="")
-            else:
-                self.current_user_label.config(text="User: Guest")
-                self.balance_label.config(text="Balance: $0")
+            self.user_label.config(text=f"{lang['welcome'].format(username=user.username)}")
+            self.balance_label.config(text=f"{lang['amount']}: ******")
+        else:
+            self.user_label.config(text=f"{lang['welcome'].format(username='Guest')}")
+            self.balance_label.config(text=f"{lang['amount']}: 0")
+        self.result_label.config(text="")
+        self.amount.delete(0, tk.END)
+
+    def show_balance_func(self):
+        user = self.controller.current_user
+        lang = LANGUAGES[self.controller.language]
+        if user:
+            self.balance_label.config(text=f"{lang['amount']}: ${user.balance}")
+
+    def withdraw_action(self):
+        from transaction import BankAccount
+        play_withdraw()
+        user = self.controller.current_user
+        lang = LANGUAGES[self.controller.language]
+
+        try:
+            amount = float(self.amount.get())
+            if amount <= 0:
+                self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
+                return
+        except ValueError:
+            self.result_label.config(text=f"❌ {lang['invalid_amount_format']}", foreground=DANGER_COLOR)
+            return
+
+        result = user.withdraw(amount)
+        self.amount.delete(0, tk.END)
+
+
+        play_success()
+
+
+        self.controller.show_frame("LoadingPage")
+        self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
+
 
 
 class TransferPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
+
         for i in range(10): self.grid_rowconfigure(i, weight=1)
         for j in range(4): self.grid_columnconfigure(j, weight=1)
-        ttk.Label(self, text="Transfer Money", style='SubTitle.TLabel', foreground=PRIMARY_COLOR).grid(row=0, column=0,
-                                                                                                       columnspan=4,
-                                                                                                       padx=20, pady=30,
-                                                                                                       sticky="n")
+
+        self.title_label = ttk.Label(self, text="", style='SubTitle.TLabel', foreground=PRIMARY_COLOR)
+        self.title_label.grid(row=0, column=0, columnspan=4, padx=20, pady=30, sticky="n")
+
         self.current_user_label = ttk.Label(self, text="")
         self.current_user_label.grid(row=1, column=0, columnspan=2, padx=40, pady=10, sticky="w")
         self.balance_label = ttk.Label(self, text="")
         self.balance_label.grid(row=2, column=0, padx=40, pady=5, sticky="w")
-        ttk.Button(self, text="Show Balance", command=self.show_balance_func, style='Secondary.TButton').grid(
-            row=2, column=1, padx=20, pady=5, sticky="w"
-        )
-        ttk.Button(self, text="← Main Menu", command=lambda: controller.show_frame("MainMenu"),
-                   style='Secondary.TButton').grid(
-            row=9, column=0, columnspan=4, pady=50, padx=20, sticky="ew"
-        )
-        ttk.Label(self, text="Amount:").grid(row=4, column=0, padx=40, pady=20, sticky="e")
+        self.show_balance_button = ttk.Button(self, text="", command=self.show_balance_func, style='Secondary.TButton')
+        self.show_balance_button.grid(row=2, column=1, padx=20, pady=5, sticky="w")
+
+        self.amount_label = ttk.Label(self, text="")
+        self.amount_label.grid(row=4, column=0, padx=40, pady=20, sticky="e")
         self.trsmoney = ttk.Entry(self, style='TEntry')
         self.trsmoney.grid(row=4, column=1, columnspan=2, padx=20, pady=20, sticky="ew")
-        ttk.Label(self, text="Receiver:").grid(row=5, column=0, padx=40, pady=20, sticky="e")
+
+        self.receiver_label = ttk.Label(self, text="")
+        self.receiver_label.grid(row=5, column=0, padx=40, pady=20, sticky="e")
         self.recvr_var = tk.StringVar()
         self.recvr_var.trace_add("write", self.check_receiver)
         self.recvr = ttk.Entry(self, textvariable=self.recvr_var, style='TEntry')
         self.recvr.grid(row=5, column=1, columnspan=2, padx=20, pady=20, sticky="ew")
         self.receiver_status = ttk.Label(self, text="")
         self.receiver_status.grid(row=6, column=1, columnspan=2, padx=10, sticky="w")
-        self.transfer_button = ttk.Button(self, text="Transfer", command=self.transfer_action, style='Primary.TButton')
+
+        self.transfer_button = ttk.Button(self, text="", command=self.transfer_action, style='Primary.TButton')
         self.transfer_button.grid(row=7, column=0, columnspan=4, pady=30, padx=20, sticky="ew")
         self.transfer_button.config(state="disabled")
+
         self.result_label = ttk.Label(self, text="")
         self.result_label.grid(row=8, column=0, columnspan=4, sticky="n")
 
-    def transfer_action(self):
-        sender = self.controller.current_user
-        receiver_name = self.recvr.get().capitalize()
-        try:
-            amount = float(self.trsmoney.get())
-            if amount <= 0:
-                self.result_label.config(text="❌ Invalid amount.", foreground=DANGER_COLOR)
-                return
-        except ValueError:
-            self.result_label.config(text="❌ Invalid amount format.", foreground=DANGER_COLOR)
-            return
-        from transaction import BankAccount
-        receiver = BankAccount.get_user(receiver_name)
+        self.back_button = ttk.Button(self, text="", command=lambda: controller.show_frame("MainMenu"), style='Secondary.TButton')
+        self.back_button.grid(row=9, column=0, columnspan=4, pady=50, padx=20, sticky="ew")
 
-        if not receiver:
-            self.result_label.config(text="❌ User not found!", foreground=DANGER_COLOR)
-            return
+        self.update_labels()
 
-        if receiver.username == sender.username:
-            self.result_label.config(text="❌ Cannot transfer to self", foreground=DANGER_COLOR)
-            return
-        result = sender.transfer(receiver, amount)
-
-        if result.startswith("Transfer successful"):
-            self.balance_label.config(text=f"Balance: $******")
-            self.result_label.config(text=f"✅ {result}", foreground=SUCCESS_COLOR)
-        else:
-            self.result_label.config(text=f"❌ {result}", foreground=DANGER_COLOR)
-
-        self.trsmoney.delete(0, tk.END)
-        self.controller.current_user = None
-        self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=3000))
+    def update_labels(self):
+        lang = LANGUAGES[self.controller.language]
+        self.title_label.config(text=lang['transfer'])
+        self.amount_label.config(text=f"{lang['amount']}:")
+        self.receiver_label.config(text=f"{lang['receiver']}:")
+        self.transfer_button.config(text=lang['transfer'])
+        self.show_balance_button.config(text=lang['show_balance'])
+        self.back_button.config(text=f"← {lang['main_menu']}")
+        self.update_page()
 
     def update_page(self):
         user = self.controller.current_user
-        self.current_user_label.config(text=f"User: {user.username}")
-        self.balance_label.config(text=f"Balance: $******")
+        lang = LANGUAGES[self.controller.language]
+
+        if user:
+            self.current_user_label.config(text=lang['welcome'].format(username=user.username))
+            self.balance_label.config(text=f"{lang['amount']}: ******")
+        else:
+            self.current_user_label.config(text=lang['welcome'].format(username='Guest'))
+            self.balance_label.config(text=f"{lang['amount']}: 0")
+
         self.result_label.config(text="")
         self.receiver_status.config(text="")
         self.recvr_var.set("")
         self.trsmoney.delete(0, tk.END)
+        self.transfer_button.config(state="disabled")
 
     def show_balance_func(self):
         user = self.controller.current_user
-        self.balance_label.config(text=f"Balance: ${user.balance}")
+        lang = LANGUAGES[self.controller.language]
+        if user:
+            self.balance_label.config(text=f"{lang['amount']}: ${user.balance}")
 
     def check_receiver(self, *args):
         from transaction import BankAccount
         recvr = self.recvr_var.get().capitalize()
+        lang = LANGUAGES[self.controller.language]
+        user = self.controller.current_user
 
         if recvr == "":
             self.receiver_status.config(text="")
@@ -470,111 +719,90 @@ class TransferPage(ttk.Frame):
             return
 
         receiver = BankAccount.get_user(recvr)
-        current_username = self.controller.current_user.username
+        current_username = user.username if user else ""
 
         if not receiver:
-            self.receiver_status.config(text="✗ User not found", foreground=DANGER_COLOR)
+            self.receiver_status.config(text=f"✗ {lang['user_not_found']}", foreground=DANGER_COLOR)
             self.transfer_button.config(state="disabled")
         elif receiver.username == current_username:
-            self.receiver_status.config(text="✗ Cannot transfer to self", foreground=DANGER_COLOR)
+            self.receiver_status.config(text=f"✗ {lang['cannot_transfer_self']}", foreground=DANGER_COLOR)
             self.transfer_button.config(state="disabled")
         else:
             self.receiver_status.config(text="✓ User found", foreground=SUCCESS_COLOR)
             self.transfer_button.config(state="normal")
 
+    def transfer_action(self):
+        from transaction import BankAccount
+        play_success()
+        user = self.controller.current_user
+        lang = LANGUAGES[self.controller.language]
+        receiver_name = self.recvr.get().capitalize()
+        receiver = BankAccount.get_user(receiver_name)
+
+        try:
+            amount = float(self.trsmoney.get())
+            if amount <= 0:
+                self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
+                return
+        except ValueError:
+            self.result_label.config(text=f"❌ {lang['invalid_amount_format']}", foreground=DANGER_COLOR)
+            return
+
+        if not receiver or receiver.username == user.username:
+            self.result_label.config(text=f"❌ {lang['transfer_invalid']}", foreground=DANGER_COLOR)
+            return
+
+        user.transfer(receiver, amount)
+
+
+        self.controller.show_frame("LoadingPage")
+        self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
 
 class HistoryPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
-        ttk.Label(self, text="Transaction History", style='SubTitle.TLabel', foreground=SECONDARY_COLOR).pack(pady=30)
+
+
+        self.title_label = ttk.Label(self, text="", style='SubTitle.TLabel', foreground=SECONDARY_COLOR)
+        self.title_label.pack(pady=30)
+
+
         list_frame = ttk.Frame(self)
         list_frame.pack(pady=10, padx=20, fill="both", expand=True)
-        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
-        self.list_box = tk.Listbox(list_frame, width=60, height=20, font=("Consolas", 12), bg="white", fg="#333333",
-                                   selectbackground=PRIMARY_COLOR, yscrollcommand=scrollbar.set, bd=0, relief="flat")
-        scrollbar.config(command=self.list_box.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
+        self.list_box = tk.Listbox(list_frame, width=60, height=20, font=("Consolas", 12),
+                                   bg="white", fg="#333333", selectbackground=PRIMARY_COLOR,
+                                   yscrollcommand=self.scrollbar.set, bd=0, relief="flat")
+        self.scrollbar.config(command=self.list_box.yview)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.list_box.pack(side=tk.LEFT, fill="both", expand=True)
-        self.back_button = ttk.Button(self, text="← Back to Main Menu",
-                                      command=lambda: self.controller.show_frame("MainMenu"), style='Secondary.TButton')
+
+
+        self.back_button = ttk.Button(self, text="", command=lambda: self.controller.show_frame("MainMenu"),
+                                      style='Secondary.TButton')
         self.back_button.pack(pady=40)
+
+        self.update_labels()
+
+    def update_labels(self):
+        lang = LANGUAGES[self.controller.language]
+        self.title_label.config(text=lang['history'])
+        self.back_button.config(text=f"← {lang['main_menu']}")
+        self.update_page()
+
     def update_page(self):
         self.list_box.delete(0, tk.END)
         user = self.controller.current_user
-        # Use the 'transactions' attribute (matches BankAccount class)
+        lang = LANGUAGES[self.controller.language]
+
         if user and getattr(user, "transactions", None):
             for item in reversed(user.transactions):
                 self.list_box.insert(tk.END, item)
         else:
-            self.list_box.insert(tk.END, "No transactions yet.")
+            self.list_box.insert(tk.END, lang['no_transactions'])
 
-
-class WithdrawPage(ttk.Frame):
-    def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        self.controller = controller
-        for i in range(10): self.grid_rowconfigure(i, weight=1)
-        for j in range(4): self.grid_columnconfigure(j, weight=1)
-
-        ttk.Label(self, text="Withdraw Cash", style='SubTitle.TLabel', foreground=DANGER_COLOR).grid(row=0, column=0,
-                                                                                                     columnspan=4,
-                                                                                                     padx=20, pady=30,
-                                                                                                     sticky="n")
-        self.user_label = ttk.Label(self, text="")
-        self.user_label.grid(row=1, column=0, columnspan=2, padx=40, pady=10, sticky="w")
-        self.balance_label = ttk.Label(self, text="")
-        self.balance_label.grid(row=2, column=0, padx=40, pady=5, sticky="w")
-        self.update_balance_button = ttk.Button(self, text="Show Balance", command=self.show_balance_func,
-                                                style='Secondary.TButton')
-        self.update_balance_button.grid(row=2, column=1, padx=20, pady=5, sticky="w")
-        ttk.Label(self, text="Amount:").grid(row=4, column=0, padx=40, pady=30, sticky="e")
-        self.amount = ttk.Entry(self, style='TEntry')
-        self.amount.grid(row=4, column=1, columnspan=2, padx=20, pady=30, sticky="ew")
-        self.result_label = ttk.Label(self, text="")
-        self.result_label.grid(row=6, column=0, columnspan=4, sticky="n")
-        ttk.Button(self, text="Withdraw", command=self.withdraw_action, style='Danger.TButton').grid(row=5, column=0,
-                                                                                                     columnspan=4,
-                                                                                                     pady=20, padx=20,
-                                                                                                     sticky="ew")
-        self.back_button = ttk.Button(self, text="← Main Menu", command=lambda: self.controller.show_frame("MainMenu"),
-                                      style='Secondary.TButton')
-        self.back_button.grid(row=8, column=0, columnspan=4, pady=50, padx=20, sticky="ew")
-    def withdraw_action(self):
-        play_withdraw()
-        user = self.controller.current_user
-        try:
-            amount = float(self.amount.get())
-            if amount <= 0:
-                self.result_label.config(text="❌ Please enter a valid amount.", foreground=DANGER_COLOR)
-                return
-        except ValueError:
-            self.result_label.config(text="❌ Invalid amount format.", foreground=DANGER_COLOR)
-            return
-        from transaction import BankAccount
-        result = user.withdraw(amount)
-
-        if result.startswith("Withdraw successful"):
-            self.balance_label.config(text=f"Balance: $******")
-            self.result_label.config(text=f"✅ {result}", foreground=SUCCESS_COLOR)
-        else:
-            self.result_label.config(text=f"❌ {result}", foreground=DANGER_COLOR)
-        self.amount.delete(0, tk.END)
-        self.controller.current_user = None
-        self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=4000))
-    def show_balance_func(self):
-        user = self.controller.current_user
-        self.balance_label.config(text=f"Balance: {user.balance} AZN")
-
-    def update_page(self):
-        user: BankAccount = self.controller.current_user
-        if user:
-            self.user_label.config(text=f"User: {user.username}")
-            self.balance_label.config(text="Balance: ****** AZN")
-            self.result_label.config(text="")
-        else:
-            self.user_label.config(text="User: N/A")
-            self.balance_label.config(text="Balance: 0 AZN")
 
 
 app = App()
