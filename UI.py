@@ -17,8 +17,8 @@ DANGER_COLOR = "#dc3545"
 BACKGROUND_COLOR = "#f7f7f7"
 FOREGROUND_COLOR = "#333333"
 
-MAIN_FONT = ("Jost", 20)
-TITLE_FONT = ("Helvetica", 30, "bold")
+MAIN_FONT = ("Jost", 20, "bold")
+TITLE_FONT = ("Jost", 30, "bold")
 WINDOW_WIDTH = 1000
 WINDOW_HEIGHT = 800
 
@@ -187,7 +187,7 @@ class LoginPage(ttk.Frame):
             self.dot_list[len(self.pin) - 1].config(text='〇', font=("Arial", 30), foreground="blue")
 
     def open_register_page(self):
-        url = "https://google.com"
+        url = "http://ufaz-final-project-registration-page-atm.vercel.app/"
         webbrowser.open(url)
 
     def login_user(self, k=0):
