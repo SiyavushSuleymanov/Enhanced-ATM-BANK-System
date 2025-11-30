@@ -1,4 +1,5 @@
 import datetime
+import pygame
 import webbrowser
 import tkinter as tk
 from tkinter import Frame, ttk
@@ -16,17 +17,35 @@ DANGER_COLOR = "#dc3545"
 BACKGROUND_COLOR = "#f7f7f7"
 FOREGROUND_COLOR = "#333333"
 
-MAIN_FONT = ("Helvetica", 20)
+MAIN_FONT = ("Jost", 20)
 TITLE_FONT = ("Helvetica", 30, "bold")
 WINDOW_WIDTH = 1000
 WINDOW_HEIGHT = 800
 
+
+
+pygame.mixer.init()
+
+def play_ambiance():
+    ambiance = pygame.mixer.Sound("sounds/ambiance.wav")
+    ambiance.set_volume(0.25)
+    ambiance.play(loops=-1)
+def play_click():
+    pin_sound = pygame.mixer.Sound("sounds/button-202966.mp3")
+    pin_sound.set_volume(0.25)
+    pin_sound.play()
+
+def play_success():
+    pygame.mixer.Sound("sounds/success.mp3").play()
+def play_withdraw():
+    pygame.mixer.Sound("sounds/withdraw.mp3").play()
 
 class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.current_user = None
         self.frames = {}
+        play_ambiance()
         self.style = ttk.Style(self)
         self.style.theme_use('clam')
         self.style.configure('TFrame', background="white")
@@ -141,6 +160,7 @@ class LoginPage(ttk.Frame):
         # WORKING ON...
         pin_len = 4
         def pressed(ent_digit):
+            play_click()
             if ent_digit.keysym.isdigit() and len(str(self.pin)) != 4:
                 self.pin += ent_digit.keysym
                 upgrade()
@@ -217,6 +237,10 @@ class LoginPage(ttk.Frame):
                     usr.blocked = True
                     usr.update_db()
                     self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
+                    self.pin = ""
+                    for dot in dot_list:
+                        dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                    self.focus_set()
         except ValueError:
             pass
 
@@ -488,6 +512,7 @@ class WithdrawPage(ttk.Frame):
                                       style='Secondary.TButton')
         self.back_button.grid(row=8, column=0, columnspan=4, pady=50, padx=20, sticky="ew")
     def withdraw_action(self):
+        play_withdraw()
         user = self.controller.current_user
         try:
             amount = float(self.amount.get())
@@ -507,7 +532,7 @@ class WithdrawPage(ttk.Frame):
             self.result_label.config(text=f"❌ {result}", foreground=DANGER_COLOR)
         self.amount.delete(0, tk.END)
         self.controller.current_user = None
-        self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=3000))
+        self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=4000))
     def show_balance_func(self):
         user = self.controller.current_user
         self.balance_label.config(text=f"Balance: {user.balance} AZN")

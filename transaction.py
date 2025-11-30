@@ -6,19 +6,20 @@ key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1
 supabase = create_client(url, key)
 
 class BankAccount:
-    def __init__(self, username, pin, balance, transactions, blocked=False):
+    def __init__(self, username, pin, balance, transactions, blocked=False,wrong_tries=0):
         self.username = username
         self.pin = pin
         self.balance = balance
         self.transactions = transactions
         self.blocked = blocked
+        self.wrong_tries = wrong_tries
 
     @classmethod
     def get_user(cls, username):
         res = supabase.table("users").select("*").eq("name", username).execute()
         if res.data:
             user = res.data[0]
-            return cls(user["name"], user["pin"], user["balance"], user["transactions"], user["blocked"])
+            return cls(user["name"], user["pin"], user["balance"], user["transactions"], user["blocked"],user["wrong_tries"])
         return None
 
     def update_balance(self):
@@ -87,5 +88,6 @@ class BankAccount:
         supabase.table("users").update({
             "balance": self.balance,
             "pin": self.pin,
-            "transactions": self.transactions
+            "transactions": self.transactions,
+            "wrong_tries": self.wrong_tries
         }).eq("name", self.username).execute()
