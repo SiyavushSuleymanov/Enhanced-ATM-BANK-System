@@ -1,6 +1,9 @@
 import datetime
+import webbrowser
 import tkinter as tk
 from tkinter import Frame, ttk
+from webbrowser import register
+
 #+from PIL import Image,ImageTK
 
 from transaction import BankAccount
@@ -120,9 +123,16 @@ class LoginPage(ttk.Frame):
         pin.grid(row=4, column=2, columnspan=3, sticky="e", padx=10, pady=20)
         login_button = ttk.Button(self, text="Login", command=self.login_user, style='Primary.TButton')
         login_button.grid(row=5, column=2, columnspan=6, pady=40, sticky="ew")
+        register_button = ttk.Button(self, text="Register", command=self.open_register_page, style='Secondary.TButton')
+        register_button.grid(row=6, column=4, columnspan=3, pady=40, sticky="ew")
         self.error_label = ttk.Label(self, text="", foreground=DANGER_COLOR, background="white")
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
         self.pin = ""
+
+    def open_register_page(self):
+        url = "https://google.com"
+        webbrowser.open(url)
+
     def login_user(self, k=0):
         if self.usr['state'] == 'active':
             self.usr.config(state="disabled")
