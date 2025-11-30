@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 from tkinter import Frame, ttk
-from PIL import Image
+#+from PIL import Image,ImageTK
 
 from transaction import BankAccount
 
@@ -438,11 +438,14 @@ class HistoryPage(ttk.Frame):
         self.back_button.pack(pady=40)
     def update_page(self):
         self.list_box.delete(0, tk.END)
-        if self.controller.current_user and self.controller.current_user.trnsct_list:
-            for item in reversed(self.controller.current_user.trnsct_list):
+        user = self.controller.current_user
+        # Use the 'transactions' attribute (matches BankAccount class)
+        if user and getattr(user, "transactions", None):
+            for item in reversed(user.transactions):
                 self.list_box.insert(tk.END, item)
         else:
             self.list_box.insert(tk.END, "No transactions yet.")
+
 
 class WithdrawPage(ttk.Frame):
     def __init__(self, parent, controller):

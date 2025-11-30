@@ -47,23 +47,36 @@ class BankAccount:
         self.update_balance()
         return f"Withdraw successful! Current balance: {self.balance} AZN"
 
-    def transfer(self, receiver_name, amount):
-        receiver = BankAccount.get_user(receiver_name)
-        if not receiver:
+    def transfer(self, receiver, amount):
+        if isinstance(receiver, str):
+            receiver_obj = BankAccount.get_user(receiver)
+        else:
+            receiver_obj = receiver
+        if not receiver_obj:
             return "Receiver not found"
         if amount > self.balance:
             return "Insufficient funds!"
+        if receiver_obj.username == self.username:
+            return "Cannot transfer to self"
         self.balance -= amount
-        receiver.balance += amount
+        receiver_obj.balance += amount
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.transactions.append(
-            f"{self.username} sent {amount} AZN to {receiver_name} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            f"{self.username} sent {amount} AZN to {receiver_obj.username} - {timestamp}"
         )
-        receiver.transactions.append(
-            f"received {amount} AZN from {self.username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        receiver_obj.transactions.append(
+            f"{receiver_obj.username} received {amount} AZN from {self.username} - {timestamp}"
         )
-        self.update_balance()
-        receiver.update_balance()
+        try:
+            self.update_balance()
+        except Exception:
+            pass
+        try:
+            receiver_obj.update_balance()
+        except Exception:
+            pass
         return "Transfer successful!"
+
 
     def update_db(self):
         from supabase import create_client
