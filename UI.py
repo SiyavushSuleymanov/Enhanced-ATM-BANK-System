@@ -197,7 +197,6 @@ class App(tk.Tk):
             frame.update_page()
         frame.tkraise()
 
-
 class LoadingPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
