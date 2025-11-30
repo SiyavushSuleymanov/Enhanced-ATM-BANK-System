@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import Frame, ttk
 from PIL import Image
 
-from transaction import BankAccount, users
+from transaction import BankAccount
 
 
 PRIMARY_COLOR = "#007BFF"
@@ -169,49 +169,43 @@ class LoginPage(ttk.Frame):
         # WORKING ON...
 
         usr_input = self.usr.get().capitalize()
-        from transaction import users
         self.error_label.config(text="")
-        user_found = False
-        for current_user_ind in range(len(users)):
-            user_data = users[current_user_ind]
-            if usr_input == user_data["name"]:
-                user_found = True
-                usr = BankAccount(user_data["name"], user_data["pin"], user_data["balance"], user_data["transactions"],
-                                  user_data["wrong_tries"])
-                usr.blocked = user_data["blocked"]
-                self.current_user_ind = current_user_ind
-                if usr.blocked:
-                    self.error_label.config(text="❌ Card is blocked", foreground=DANGER_COLOR)
-                    return
-                try:
-                    if int(self.pin) == user_data["pin"]:
-                        users[current_user_ind]["wrong_tries"] = 0
-                        self.controller.current_user = usr
-                        self.usr.delete(0, tk.END)
-                        self.controller.show_frame("MainMenu", transition_time_ms=1500)
-                    else:
-                        users[current_user_ind]["wrong_tries"] += 1
-                        if users[current_user_ind]["wrong_tries"] < 3:
-                            self.error_label.config(
-                                text=f"❌ Incorrect PIN ({3 - users[current_user_ind]['wrong_tries']} tries left)",
-                                foreground=DANGER_COLOR)
-                            self.pin = ""
-                            for dot in dot_list:
-                                dot.config(text='〇', font=('Arial', 30), foreground="blue")
-                            self.focus_set()
-                        else:
-                            usr.blocked = True
-                            users[current_user_ind]["blocked"] = True
-                            self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
-                            break
-                except ValueError:
-                    pass #print("Continue..")
-                break
-        if not user_found:
+        usr = BankAccount.get_user(usr_input)
+        if not usr:
             self.error_label.config(text="❌ User not found", foreground=DANGER_COLOR)
             self.usr.config(state="normal")
-            dot_list = []
             self.pin = ""
+            return
+
+        if usr.blocked:
+            self.error_label.config(text="❌ Card is blocked", foreground=DANGER_COLOR)
+            return
+
+        try:
+            if int(self.pin) == usr.pin:
+                usr.wrong_tries = 0
+                usr.update_db()
+                self.controller.current_user = usr
+                self.usr.delete(0, tk.END)
+                self.controller.show_frame("MainMenu", transition_time_ms=1500)
+            else:
+                usr.wrong_tries += 1
+                if usr.wrong_tries < 3:
+                    usr.update_db()
+                    self.error_label.config(
+                        text=f"❌ Incorrect PIN ({3 - usr.wrong_tries} tries left)",
+                        foreground=DANGER_COLOR
+                    )
+                    self.pin = ""
+                    for dot in dot_list:
+                        dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                    self.focus_set()
+                else:
+                    usr.blocked = True
+                    usr.update_db()
+                    self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
+        except ValueError:
+            pass
 
     def logout(self):
         self.controller.current_user = None
@@ -251,6 +245,7 @@ class MainMenu(ttk.Frame):
     def logout(self):
         self.controller.current_user = None
         self.controller.show_frame("LoginPage", transition_time_ms=1500)
+
 class DepositPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
@@ -314,6 +309,8 @@ class DepositPage(ttk.Frame):
         else:
             self.current_user_label.config(text="User: Guest")
             self.balance_label.config(text="Balance: $0")
+
+
 class TransferPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
@@ -350,8 +347,8 @@ class TransferPage(ttk.Frame):
         self.transfer_button.config(state="disabled")
         self.result_label = ttk.Label(self, text="")
         self.result_label.grid(row=8, column=0, columnspan=4, sticky="n")
+
     def transfer_action(self):
-        from transaction import users
         sender = self.controller.current_user
         receiver_name = self.recvr.get().capitalize()
         try:
@@ -362,26 +359,28 @@ class TransferPage(ttk.Frame):
         except ValueError:
             self.result_label.config(text="❌ Invalid amount format.", foreground=DANGER_COLOR)
             return
-        sender_ind = None
-        receiver_ind = None
-        for i, u in enumerate(users):
-            if u["name"] == sender.username:
-                sender_ind = i
-            if u["name"] == receiver_name:
-                receiver_ind = i
-        if sender_ind is None or receiver_ind is None:
+        from transaction import BankAccount
+        receiver = BankAccount.get_user(receiver_name)
+
+        if not receiver:
             self.result_label.config(text="❌ User not found!", foreground=DANGER_COLOR)
             return
-        result = sender.transfer_money(recvr=receiver_name, trsmoney=amount, ind=sender_ind, reind=receiver_ind)
+
+        if receiver.username == sender.username:
+            self.result_label.config(text="❌ Cannot transfer to self", foreground=DANGER_COLOR)
+            return
+        result = sender.transfer(receiver, amount)
 
         if result.startswith("Transfer successful"):
             self.balance_label.config(text=f"Balance: $******")
             self.result_label.config(text=f"✅ {result}", foreground=SUCCESS_COLOR)
         else:
             self.result_label.config(text=f"❌ {result}", foreground=DANGER_COLOR)
+
         self.trsmoney.delete(0, tk.END)
         self.controller.current_user = None
         self.after(500, lambda: self.controller.show_frame("LoginPage", transition_time_ms=3000))
+
     def update_page(self):
         user = self.controller.current_user
         self.current_user_label.config(text=f"User: {user.username}")
@@ -390,28 +389,34 @@ class TransferPage(ttk.Frame):
         self.receiver_status.config(text="")
         self.recvr_var.set("")
         self.trsmoney.delete(0, tk.END)
+
     def show_balance_func(self):
         user = self.controller.current_user
         self.balance_label.config(text=f"Balance: ${user.balance}")
+
     def check_receiver(self, *args):
-        from transaction import users
+        from transaction import BankAccount
         recvr = self.recvr_var.get().capitalize()
+
         if recvr == "":
             self.receiver_status.config(text="")
             self.transfer_button.config(state="disabled")
             return
+
+        receiver = BankAccount.get_user(recvr)
         current_username = self.controller.current_user.username
-        for u in users:
-            if u["name"] == recvr:
-                if u["name"] == current_username:
-                    self.receiver_status.config(text="✗ Cannot transfer to self", foreground=DANGER_COLOR)
-                    self.transfer_button.config(state="disabled")
-                    return
-                self.receiver_status.config(text="✓ User found", foreground=SUCCESS_COLOR)
-                self.transfer_button.config(state="normal")
-                return
-        self.receiver_status.config(text="✗ User not found", foreground=DANGER_COLOR)
-        self.transfer_button.config(state="disabled")
+
+        if not receiver:
+            self.receiver_status.config(text="✗ User not found", foreground=DANGER_COLOR)
+            self.transfer_button.config(state="disabled")
+        elif receiver.username == current_username:
+            self.receiver_status.config(text="✗ Cannot transfer to self", foreground=DANGER_COLOR)
+            self.transfer_button.config(state="disabled")
+        else:
+            self.receiver_status.config(text="✓ User found", foreground=SUCCESS_COLOR)
+            self.transfer_button.config(state="normal")
+
+
 class HistoryPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
@@ -435,6 +440,7 @@ class HistoryPage(ttk.Frame):
                 self.list_box.insert(tk.END, item)
         else:
             self.list_box.insert(tk.END, "No transactions yet.")
+
 class WithdrawPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
@@ -475,12 +481,9 @@ class WithdrawPage(ttk.Frame):
         except ValueError:
             self.result_label.config(text="❌ Invalid amount format.", foreground=DANGER_COLOR)
             return
-        user_ind = None
-        for i, u in enumerate(users):
-            if u["name"] == user.username:
-                user_ind = i
-                break
-        result = user.withdraw_money(amount, user_ind)
+        from transaction import BankAccount
+        result = user.withdraw_money(amount)
+
         if result.startswith("Withdraw successful"):
             self.balance_label.config(text=f"Balance: $******")
             self.result_label.config(text=f"✅ {result}", foreground=SUCCESS_COLOR)
@@ -492,22 +495,18 @@ class WithdrawPage(ttk.Frame):
     def show_balance_func(self):
         user = self.controller.current_user
         self.balance_label.config(text=f"Balance: ${user.balance}")
+
     def update_page(self):
-        user = self.controller.current_user
+        user: BankAccount = self.controller.current_user
         if user:
-            from transaction import users
-            user_ind = None
-            for i, u in enumerate(users):
-                if u["name"] == user.username:
-                    user_ind = i
-                    break
-            if user_ind is not None:
-                self.user_label.config(text=f"User: {user.username}")
-                self.balance_label.config(text="Balance: $******")
-                self.result_label.config(text="")
-            else:
-                self.user_label.config(text="User: N/A")
-                self.balance_label.config(text="Balance: $0")
+            self.user_label.config(text=f"User: {user.username}")
+            self.balance_label.config(text="Balance: $******")
+            self.result_label.config(text="")
+        else:
+            self.user_label.config(text="User: N/A")
+            self.balance_label.config(text="Balance: $0")
+
+
 app = App()
 app.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')
 app.title('Modern ATM Interface')
