@@ -3,9 +3,9 @@ import pygame
 import webbrowser
 import tkinter as tk
 from tkinter import Frame, ttk
-from webbrowser import register
 
-#+from PIL import Image,ImageTK
+
+from PIL import Image,ImageTk
 
 from transaction import BankAccount
 
@@ -66,10 +66,10 @@ class App(tk.Tk):
         self.style.map('Secondary.TButton', background=[('active', '#5a6268')])
         self.style.configure('TEntry', font=MAIN_FONT, padding=5, fieldbackground="white")
         try:
-            image_path = "ufaz_vector_bg.png"
+            image_path = "bg.png"
             original_image = Image.open(image_path)
             resized_image = original_image.resize((WINDOW_WIDTH, WINDOW_HEIGHT), Image.LANCZOS)
-            self.bg_image = Image.PhotoImage(resized_image)
+            self.bg_image = ImageTk.PhotoImage(resized_image)
             background_label = tk.Label(self, image=self.bg_image)
             background_label.image = self.bg_image
             background_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -249,27 +249,59 @@ class MainMenu(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         self.controller = controller
+
+        # --- ICONS LOAD ---
+        self.deposit_icon = ImageTk.PhotoImage(Image.open("deposit.png").resize((32, 32)))
+        self.transfer_icon = ImageTk.PhotoImage(Image.open("transfer_money.png").resize((32, 32)))
+        self.withdraw_icon = ImageTk.PhotoImage(Image.open("withdraw.png").resize((32, 32)))
+        self.history_icon = ImageTk.PhotoImage(Image.open("history.png").resize((32, 32)))
+
         for i in range(10): self.grid_rowconfigure(i, weight=1)
         for j in range(5): self.grid_columnconfigure(j, weight=1)
-        self.current_user_label = ttk.Label(self, text="", style='SubTitle.TLabel', foreground=PRIMARY_COLOR)
-        self.current_user_label.grid(row=0, column=1, columnspan=3, pady=40, sticky="n")
-        self.deposit_button = ttk.Button(self, text="💰 Deposit", style='Primary.TButton',
-                                         command=lambda: controller.show_frame("DepositPage", transition_time_ms=3000))
-        self.deposit_button.grid(row=2, column=1, pady=20, padx=40, sticky="ew")
-        self.transfer_button = ttk.Button(self, text="💸 Transfer", style='Primary.TButton',
-                                          command=lambda: controller.show_frame("TransferPage",
-                                                                                transition_time_ms=3000))
-        self.transfer_button.grid(row=2, column=3, pady=20, padx=40, sticky="ew")
 
-        self.withdraw_button = ttk.Button(self, text="Withdraw", style='Primary.TButton',
-                                          command=lambda: controller.show_frame("WithdrawPage",
-                                                                                transition_time_ms=3000))
-        self.withdraw_button.grid(row=3, column=1, pady=20, padx=40, sticky="ew")
-        self.history_button = ttk.Button(self, text="History", style='Primary.TButton',
-                                         command=lambda: controller.show_frame("HistoryPage", transition_time_ms=3000))
-        self.history_button.grid(row=3, column=3, pady=20, padx=40, sticky="ew")
-        self.logout_button = ttk.Button(self, text="Log Out", style='Secondary.TButton', command=self.logout)
+        self.current_user_label = ttk.Label(
+            self, text="", style='SubTitle.TLabel', foreground=PRIMARY_COLOR
+        )
+        self.current_user_label.grid(row=2, column=1, columnspan=3, pady=40, sticky="n")
+
+        self.deposit_button = ttk.Button(
+            self, text="   Deposit", image=self.deposit_icon, compound="left",
+            style='Primary.TButton',
+            command=lambda: controller.show_frame("DepositPage", transition_time_ms=3000)
+        )
+        self.deposit_button.grid(row=3, column=1, pady=20, padx=40, sticky="ew")
+
+        self.transfer_button = ttk.Button(
+            self, text="   Transfer", image=self.transfer_icon, compound="left",
+            style='Primary.TButton',
+            command=lambda: controller.show_frame("TransferPage", transition_time_ms=3000)
+        )
+        self.transfer_button.grid(row=3, column=3, pady=20, padx=40, sticky="ew")
+
+
+        self.withdraw_button = ttk.Button(
+            self, text="   Withdraw", image=self.withdraw_icon, compound="left",
+            style='Primary.TButton',
+            command=lambda: controller.show_frame("WithdrawPage", transition_time_ms=3000)
+        )
+        self.withdraw_button.grid(row=4, column=1, pady=20, padx=40, sticky="ew")
+
+
+        self.history_button = ttk.Button(
+            self, text="   History", image=self.history_icon, compound="left",
+            style='Primary.TButton',
+            command=lambda: controller.show_frame("HistoryPage", transition_time_ms=3000)
+        )
+        self.history_button.grid(row=4, column=3, pady=20, padx=40, sticky="ew")
+
+
+        self.logout_button = ttk.Button(
+            self, text="   Log Out", compound="left",
+            style='Secondary.TButton',
+            command=self.logout
+        )
         self.logout_button.grid(row=5, column=1, columnspan=3, pady=60, sticky="n")
+
     def update_page(self):
         user = self.controller.current_user
         if user:
@@ -297,7 +329,7 @@ class DepositPage(ttk.Frame):
         self.update_balance_button = ttk.Button(self, text="Show Balance", command=self.show_balance_func,
                                                 style='Primary.TButton')
         self.update_balance_button.grid(row=2, column=1, padx=20, pady=5, sticky="w")
-        ttk.Label(self, text="Amount:", font=("Segoe UI", 18, "bold")).grid(row=4, column=0, padx=40, pady=30,
+        ttk.Label(self, text="Amount:", font=("Jost", 18, "bold")).grid(row=4, column=0, padx=40, pady=30,
                                                                             sticky="e")
         self.amount = ttk.Entry(self, style='TEntry')
         self.amount.grid(row=4, column=1, columnspan=2, padx=20, pady=30, sticky="ew")
@@ -547,5 +579,5 @@ class WithdrawPage(ttk.Frame):
 
 app = App()
 app.geometry(f'{WINDOW_WIDTH}x{WINDOW_HEIGHT}')
-app.title('Modern ATM Interface')
+app.title('Ufaz Bank')
 app.mainloop()
