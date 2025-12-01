@@ -535,7 +535,7 @@ class DepositPage(ttk.Frame):
         lang = LANGUAGES[self.controller.language]
 
         try:
-            zeroch = str(self.trsmoney.get())
+            zeroch = str(self.amount.get())
             amount_val = float(self.amount.get())
             if amount_val <= 0 or len(str(amount_val).split('.')[1]) > 2 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang.get('invalid_amount')}", foreground=DANGER_COLOR)
@@ -631,7 +631,7 @@ class WithdrawPage(ttk.Frame):
         lang = LANGUAGES[self.controller.language]
 
         try:
-            zeroch = str(self.trsmoney.get())
+            zeroch = str(self.amount.get())
             amount = float(self.amount.get())
             if amount <= 0 or len(str(amount).split('.')[1]) > 2 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
