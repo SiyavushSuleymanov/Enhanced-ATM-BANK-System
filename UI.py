@@ -782,7 +782,7 @@ class TransferPage(ttk.Frame):
 
         try:
             zeroch = str(self.trsmoney.get())
-            amount = float(self.trsmoney.get())
+            amount = float(f"{self.trsmoney.get():.2f}")
             if amount <= 0 or len(str(amount).split('.')[1]) > 2 or (zeroch[0] == '0' and zeroch[1] != '.'):
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
                 play_error()
