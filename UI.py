@@ -144,7 +144,7 @@ class App(tk.Tk):
         play_ambiance()
         self.style = ttk.Style(self)
         self.style.theme_use('clam')
-        self.style.configure('TFrame', background="white")
+        self.style.configure('TFrame', background='#B0E0F6')
         self.style.configure('TLabel', background="white", font=MAIN_FONT, foreground=FOREGROUND_COLOR)
         self.style.configure('Title.TLabel', font=TITLE_FONT, foreground=PRIMARY_COLOR)
         self.style.configure('SubTitle.TLabel', font=("Segoe UI", 20, "bold"), foreground=FOREGROUND_COLOR)
