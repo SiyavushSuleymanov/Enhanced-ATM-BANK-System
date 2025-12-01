@@ -366,7 +366,7 @@ class LoginPage(ttk.Frame):
             play_error()
             self.usir.config(state="normal")
             self.pin = ""
-            return #2
+            return #21
         if self.usir['state'] == 'normal':
             self.usir.config(state='disabled')
         elif self.usir['state'] == 'disabled':
