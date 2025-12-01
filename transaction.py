@@ -31,6 +31,7 @@ class BankAccount:
 
     def deposit(self, amount):
         self.balance += amount
+        self.balance = float(f"{self.balance:.2f}")
         self.transactions.append(
             f"{self.username} deposited {amount} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
@@ -42,6 +43,7 @@ class BankAccount:
         if amount > self.balance:
             return "Insufficient funds!"
         self.balance -= amount
+        self.balance = float(f"{self.balance:.2f}")
         self.transactions.append(
             f"{self.username} withdrew {amount} AZN - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
@@ -60,7 +62,9 @@ class BankAccount:
         if receiver_obj.username == self.username:
             return "Cannot transfer to self"
         self.balance -= amount
+        self.balance = float(f"{self.balance:.2f}")
         receiver_obj.balance += amount
+        receiver_obj.balance = float(f"{receiver_obj.balance:.2f}")
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.transactions.append(
             f"{self.username} sent {amount} AZN to {receiver_obj.username} - {timestamp}"
