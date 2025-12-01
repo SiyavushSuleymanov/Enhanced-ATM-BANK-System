@@ -535,8 +535,9 @@ class DepositPage(ttk.Frame):
         lang = LANGUAGES[self.controller.language]
 
         try:
+            zeroch = str(self.trsmoney.get())
             amount_val = float(self.amount.get())
-            if amount_val <= 0:
+            if amount_val <= 0 or len(str(amount_val).split('.')[1]) > 2 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang.get('invalid_amount')}", foreground=DANGER_COLOR)
                 return
         except ValueError:
@@ -556,9 +557,9 @@ class DepositPage(ttk.Frame):
         user = self.controller.current_user
         lang = LANGUAGES[self.controller.language]
         if user:
-            self.balance_label.config(text=f"{lang.get('amount')}: ${user.balance}")
+            self.balance_label.config(text=f"{lang.get('amount')}: {user.balance} AZN")
         else:
-            self.balance_label.config(text=f"{lang.get('amount')}: $0")
+            self.balance_label.config(text=f"{lang.get('amount')}: 0 AZN")
 
 
 
@@ -630,8 +631,9 @@ class WithdrawPage(ttk.Frame):
         lang = LANGUAGES[self.controller.language]
 
         try:
+            zeroch = str(self.trsmoney.get())
             amount = float(self.amount.get())
-            if amount <= 0:
+            if amount <= 0 or len(str(amount).split('.')[1]) > 2 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
                 return
         except ValueError:
@@ -725,7 +727,7 @@ class TransferPage(ttk.Frame):
         user = self.controller.current_user
         lang = LANGUAGES[self.controller.language]
         if user:
-            self.balance_label.config(text=f"{lang['amount']}: ${user.balance}")
+            self.balance_label.config(text=f"{lang['amount']}: {user.balance} AZN")
 
     def check_receiver(self, *args):
         from transaction import BankAccount
@@ -753,17 +755,19 @@ class TransferPage(ttk.Frame):
 
     def transfer_action(self):
         from transaction import BankAccount
-        play_success()
         user = self.controller.current_user
         lang = LANGUAGES[self.controller.language]
         receiver_name = self.recvr.get().capitalize()
         receiver = BankAccount.get_user(receiver_name)
 
         try:
+            zeroch = str(self.trsmoney.get())
             amount = float(self.trsmoney.get())
-            if amount <= 0:
+            if amount <= 0 or len(str(amount).split('.')[1]) > 2 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
                 return
+            else:
+                play_success()
         except ValueError:
             self.result_label.config(text=f"❌ {lang['invalid_amount_format']}", foreground=DANGER_COLOR)
             return
