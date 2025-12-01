@@ -248,7 +248,7 @@ class LoginPage(ttk.Frame):
 
         self.pin_label = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
         self.pin_label.grid(row=6, column=1, columnspan=4, sticky="e", padx=7, pady=20)
-
+        #5
 
 
         self.register_button = ttk.Button(self, text="Register", command=self.open_register_page,
