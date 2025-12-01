@@ -797,7 +797,7 @@ class WithdrawPage(ttk.Frame):
         try:
             zeroch = str(self.amount.get())
             amount = int(self.amount.get())
-            if amount <= 0 or zeroch[0] == '0':
+            if amount <= 0 or zeroch[0] == '0'or amount > user.balance:
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
                 play_error()
                 return
@@ -932,7 +932,7 @@ class TransferPage(ttk.Frame):
         try:
             zeroch = str(self.trsmoney.get())
             amount = float(self.trsmoney.get())
-            if amount <= 0 or len(str(amount).split('.')[1]) > 2 or (zeroch[0] == '0' and zeroch[1] != '.'):
+            if amount <= 0 or len(str(amount).split('.')[1]) > 2 or (zeroch[0] == '0' and zeroch[1] != '.') or amount > user.balance:
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
                 play_error()
                 return
