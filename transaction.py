@@ -78,19 +78,6 @@ class BankAccount:
             pass
         return "Transfer successful!"
 
-    def zero(self):
-        from supabase import create_client
-        url = "https://zumeulejkljiokmfhcrk.supabase.co"
-        key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bWV1bGVqa2xqaW9rbWZoY3JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMzAwNjIsImV4cCI6MjA3OTcwNjA2Mn0.oWXWPZT_aOefrnLQ4oaTFFgvI3MLHEo2MocrF492QZE"
-        supabase = create_client(url, key)
-        users = supabase.table("users").select("*").execute().data
-
-        for user in users:
-            supabase.table("users").update({
-                "wrong_tries": 0,
-                "blocked": False
-            }).eq("name", user["name"]).execute()
-
     def update_db(self):
         from supabase import create_client
         url = "https://zumeulejkljiokmfhcrk.supabase.co"

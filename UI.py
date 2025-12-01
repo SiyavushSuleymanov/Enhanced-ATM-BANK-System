@@ -242,7 +242,7 @@ class LoginPage(ttk.Frame):
         self.usr = ttk.Entry(self, style='TEntry', font=("Helvetica", 16, "bold"))
         self.usr.focus_set()
         self.usr.grid(row=3, column=5, columnspan=3, sticky="w", padx=10, pady=20)
-        self.usr.bind("<Return>", lambda e: self.focus_set())
+        self.usr.bind("<Return>", self.enterr)
 
         self.pin_label = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
         self.pin_label.grid(row=4, column=1, columnspan=4, sticky="e", padx=7, pady=20)
@@ -269,6 +269,19 @@ class LoginPage(ttk.Frame):
 
         self.focus_set()
         self.bind('<Key>', self.pressed)
+
+    def enterr(self, k):
+        usr_input = self.usr.get().capitalize()
+        usr = BankAccount.get_user(usr_input)
+        if self.usr['state'] == 'normal':
+            self.usr.config(state='disabled')
+        elif self.usr['state'] == 'disabled':
+            self.usr.config(state='normal')
+        usr.wrong_tries = 0
+        self.pin = ""
+        for dot in self.dot_list:
+            dot.config(text='〇', font=('Arial', 30), foreground="blue")
+        self.focus_set()
 
     def change_language(self, event=None):
         selected_lang = self.lang_var.get()
@@ -336,6 +349,10 @@ class LoginPage(ttk.Frame):
         try:
             if self.pin == str(usr.pin):
                 usr.wrong_tries = 0
+                self.pin = ""
+                for dot in self.dot_list:
+                    dot.config(text='〇', font=('Arial', 30), foreground="blue")
+                self.focus_set()
                 usr.update_db()
                 self.controller.current_user = usr
                 self.usr.delete(0, tk.END)
