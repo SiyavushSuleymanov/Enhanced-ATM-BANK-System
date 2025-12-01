@@ -133,6 +133,7 @@ def play_success():
 def play_withdraw():
     pygame.mixer.Sound("sounds/withdraw.mp3").play()
 
+
 class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
@@ -536,8 +537,8 @@ class DepositPage(ttk.Frame):
 
         try:
             zeroch = str(self.amount.get())
-            amount_val = float(self.amount.get())
-            if amount_val <= 0 or len(str(amount_val).split('.')[1]) > 2 or zeroch[0] == '0':
+            amount_val = int(self.amount.get())
+            if amount_val <= 0 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang.get('invalid_amount')}", foreground=DANGER_COLOR)
                 return
         except ValueError:
@@ -632,8 +633,8 @@ class WithdrawPage(ttk.Frame):
 
         try:
             zeroch = str(self.amount.get())
-            amount = float(self.amount.get())
-            if amount <= 0 or len(str(amount).split('.')[1]) > 2 or zeroch[0] == '0':
+            amount = int(self.amount.get())
+            if amount <= 0 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
                 return
         except ValueError:
