@@ -37,7 +37,8 @@ LANGUAGES = {
         "transfer_success": "Transfer successful",
         "transfer_invalid": "Invalid transfer",
         "cannot_transfer_self": "Cannot transfer to self",
-        "no_transactions": "No transactions yet."
+        "no_transactions": "No transactions yet.",
+        "not sufficient funds": "Not sufficient funds"
     },
     "RUS": {
         "username": "Имя пользователя",
@@ -65,7 +66,8 @@ LANGUAGES = {
         "transfer_success": "Перевод успешно",
         "transfer_invalid": "Неверный перевод",
         "cannot_transfer_self": "Нельзя перевести самому себе",
-        "no_transactions": "Нет операций."
+        "no_transactions": "Нет операций.",
+        "not sufficient funds": "недостаточно средств"
     },
     "AZE": {
         "username": "İstifadəçi adı",
@@ -93,7 +95,8 @@ LANGUAGES = {
         "transfer_success": "Köçürmə uğurla edildi",
         "transfer_invalid": "Yanlış köçürmə",
         "cannot_transfer_self": "Özünüzə köçürə bilməzsiniz",
-        "no_transactions": "Hələ əməliyyat yoxdur."
+        "no_transactions": "Hələ əməliyyat yoxdur.",
+        "not sufficient funds": "Yetersiz balans"
     }
 }
 
@@ -797,9 +800,13 @@ class WithdrawPage(ttk.Frame):
         try:
             zeroch = str(self.amount.get())
             amount = int(self.amount.get())
-            if amount <= 0 or zeroch[0] == '0'or amount > user.balance:
-                self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
-                play_error()
+            if amount <= 0 or zeroch[0] == '0' or amount > user.balance:
+                if amount > user.balance:
+                    self.result_label.config(text=f"❌ {lang['not sufficient funds']}", foreground=DANGER_COLOR)
+                    play_error()
+                else:
+                    self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
+                    play_error()
                 return
         except ValueError:
             self.result_label.config(text=f"❌ {lang['invalid_amount_format']}", foreground=DANGER_COLOR)
@@ -933,8 +940,12 @@ class TransferPage(ttk.Frame):
             zeroch = str(self.trsmoney.get())
             amount = float(self.trsmoney.get())
             if amount <= 0 or len(str(amount).split('.')[1]) > 2 or (zeroch[0] == '0' and zeroch[1] != '.') or amount > user.balance:
-                self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
-                play_error()
+                if amount < user.balance:
+                    self.result_label.config(text=f"❌ {lang['not sufficient funds']}", foreground=DANGER_COLOR)
+                    play_error()
+                else:
+                    self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
+                    play_error()
                 return
             else:
                 play_success()
