@@ -144,7 +144,7 @@ class App(tk.Tk):
         play_ambiance()
         self.style = ttk.Style(self)
         self.style.theme_use('clam')
-        self.style.configure('TFrame', background='#B0E0F6')
+        self.style.configure('TFrame', background="white")
         self.style.configure('TLabel', background="white", font=MAIN_FONT, foreground=FOREGROUND_COLOR)
         self.style.configure('Title.TLabel', font=TITLE_FONT, foreground=PRIMARY_COLOR)
         self.style.configure('SubTitle.TLabel', font=("Segoe UI", 20, "bold"), foreground=FOREGROUND_COLOR)
@@ -248,6 +248,7 @@ class LoginPage(ttk.Frame):
 
         self.pin_label = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
         self.pin_label.grid(row=6, column=1, columnspan=4, sticky="e", padx=7, pady=20)
+
         #5
 
 
@@ -256,7 +257,7 @@ class LoginPage(ttk.Frame):
         self.register_button.grid(row=7, column=3, columnspan=4, pady=40, sticky="ew")
 
         self.error_label = ttk.Label(self, text="", foreground=DANGER_COLOR, background="white")
-        self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
+        self.error_label.grid(row=7, column=2, columnspan=6, pady=5, sticky="n")
 
         self.pin_len = 4
         self.pin = ""
