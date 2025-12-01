@@ -935,7 +935,6 @@ class TransferPage(ttk.Frame):
         lang = LANGUAGES[self.controller.language]
         receiver_name = self.recvr.get()
         receiver = BankAccount.get_user(receiver_name)
-
         try:
             zeroch = str(self.trsmoney.get())
             amount = float(self.trsmoney.get())
