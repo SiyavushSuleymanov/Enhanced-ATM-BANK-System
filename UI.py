@@ -15,7 +15,6 @@ LANGUAGES = {
     "ENG": {
         "username": "Username",
         "pin": "PIN",
-        "login": "Login",
         "register": "Register",
         "user_not_found": "User not found",
         "card_blocked": "Card is blocked",
@@ -44,7 +43,6 @@ LANGUAGES = {
     "RUS": {
         "username": "Имя пользователя",
         "pin": "ПИН",
-        "login": "Войти",
         "register": "Регистрация",
         "user_not_found": "Пользователь не найден",
         "card_blocked": "Карта заблокирована",
@@ -73,7 +71,6 @@ LANGUAGES = {
     "AZE": {
         "username": "İstifadəçi adı",
         "pin": "PIN",
-        "login": "Daxil ol",
         "register": "Qeydiyyat",
         "user_not_found": "İstifadəçi tapılmadı",
         "card_blocked": "Kart bloklanıb",
@@ -124,15 +121,19 @@ def play_ambiance():
     ambiance.set_volume(0.25)
     ambiance.play(loops=-1)
 def play_click():
-    pin_sound = pygame.mixer.Sound("sounds/button-202966.mp3")
-    pin_sound.set_volume(0.25)
+    pin_sound = pygame.mixer.Sound("sounds/pinsound.mp3")
+    pin_sound.set_volume(1)
     pin_sound.play()
 
 def play_success():
     pygame.mixer.Sound("sounds/success.mp3").play()
 def play_withdraw():
-    pygame.mixer.Sound("sounds/withdraw.mp3").play()
+    withdraw_sound = pygame.mixer.Sound("sounds/withdraw.mp3")
+    withdraw_sound.set_volume(1)
+    withdraw_sound.play()
 
+def play_error():
+    pygame.mixer.Sound("sounds/error-snd.mp3").play()
 
 class App(tk.Tk):
     def __init__(self):
@@ -228,7 +229,7 @@ class LoginPage(ttk.Frame):
             width=5,
             font=("Segoe UI", 12, "bold")
         )
-        lang_choice.grid(row=7, column=8, padx=20, pady=20, sticky="ne")
+        lang_choice.grid(row=7, column=7, pady=160, sticky="en")
         lang_choice.bind("<<ComboboxSelected>>", self.change_language)
 
         for i in range(10): self.grid_rowconfigure(i, weight=1)
@@ -246,10 +247,9 @@ class LoginPage(ttk.Frame):
         self.usr.bind("<Return>", self.enterr)
 
         self.pin_label = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
-        self.pin_label.grid(row=4, column=1, columnspan=4, sticky="e", padx=7, pady=20)
+        self.pin_label.grid(row=6, column=1, columnspan=4, sticky="e", padx=7, pady=20)
 
-        self.login_button = ttk.Button(self, text="Login", command=self.login_user, style='Primary.TButton')
-        self.login_button.grid(row=5, column=2, columnspan=6, pady=40, sticky="ew")
+
 
         self.register_button = ttk.Button(self, text="Register", command=self.open_register_page,
                                           style='Secondary.TButton')
@@ -262,7 +262,7 @@ class LoginPage(ttk.Frame):
         self.pin = ""
         self.dot_list = []
         frm = ttk.Frame(self)
-        frm.grid(row=4, column=4, columnspan=3, padx=10, pady=20)
+        frm.grid(row=6, column=4, columnspan=3, padx=10, pady=20)
         for _ in range(self.pin_len):
             dot = ttk.Label(frm, text='〇', font=('Arial', 30), foreground="blue")
             dot.pack(side="left")
@@ -272,10 +272,12 @@ class LoginPage(ttk.Frame):
         self.bind('<Key>', self.pressed)
 
     def enterr(self, k):
-        usr_input = self.usr.get().capitalize()
+        self.error_label.config(text="")
+        usr_input = self.usr.get()
         usr = BankAccount.get_user(usr_input)
         if not usr:
             self.error_label.config(text="❌ User not found", foreground=DANGER_COLOR)
+            play_error()
             self.usr.config(state="normal")
             self.pin = ""
             return
@@ -298,27 +300,36 @@ class LoginPage(ttk.Frame):
         lang = LANGUAGES[self.controller.language]
         self.username_label.config(text=f"{lang['username']} :")
         self.pin_label.config(text=f"{lang['pin']} :")
-        self.login_button.config(text=lang['login'])
         self.register_button.config(text=lang['register'])
 
     def pressed(self, ent_digit):
-        play_click()
-        if ent_digit.keysym.isdigit() and len(self.pin) < self.pin_len:
-            self.pin += ent_digit.keysym
-            self.upgrade()
+        usr_input = self.usr.get()
+        usr = BankAccount.get_user(usr_input)
+        if usr.blocked == False:
+            play_click()
+            self.error_label.config(text="")
+            if ent_digit.keysym.isdigit() and len(self.pin) <= self.pin_len:
+                self.pin += ent_digit.keysym
+                self.upgrade()
+                if self.upgrade() == 1:
+                    self.after(5, self.login_user)
 
-        elif ent_digit.keysym == "BackSpace":
-            if len(self.pin) > 0:
-                self.delete()
-                self.pin = self.pin[:-1]
-            elif type(self.pin) == int:
-                pass
+            elif ent_digit.keysym == "BackSpace":
+                if len(self.pin) > 0:
+                    self.delete()
+                    self.pin = self.pin[:-1]
+                elif type(self.pin) == int:
+                    pass
+        else:
+            self.error_label.config(text="❌ Card is blocked", foreground=DANGER_COLOR)
+            play_error()
 
     def upgrade(self):
         try:
             if len(self.pin) <= self.pin_len:
                 self.dot_list[len(self.pin) - 1].config(text='◉', font=("Arial", 30), foreground="blue")
             if len(self.pin) == self.pin_len:
+                self.dot_list[-1].config(text='◉', font=("Arial", 30), foreground="blue")
                 return 1
         except IndexError:
             pass
@@ -335,21 +346,24 @@ class LoginPage(ttk.Frame):
         self.usr.config(state="active")
 
 
-        usr_input = self.usr.get().capitalize()
+        usr_input = self.usr.get()
         self.error_label.config(text="")
         usr = BankAccount.get_user(usr_input)
         if not usr:
             self.error_label.config(text="❌ User not found", foreground=DANGER_COLOR)
+            play_error()
             self.usr.config(state="normal")
             self.pin = ""
             return
 
         if usr.blocked:
             self.error_label.config(text="❌ Card is blocked", foreground=DANGER_COLOR)
+            play_error()
             return
 
         if len(self.pin) != 4:
             self.error_label.config(text="❗ Enter 4-digit PIN", foreground=DANGER_COLOR)
+            play_error()
             return
 
         try:
@@ -362,7 +376,8 @@ class LoginPage(ttk.Frame):
                 usr.update_db()
                 self.controller.current_user = usr
                 self.usr.delete(0, tk.END)
-                self.controller.show_frame("MainMenu", transition_time_ms=1500)
+                self.controller.show_frame("LoadingPage")
+                self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
             else:
                 usr.wrong_tries += 1
                 if usr.wrong_tries < 3:
@@ -371,6 +386,7 @@ class LoginPage(ttk.Frame):
                         text=f"❌ Incorrect PIN ({3 - usr.wrong_tries} tries left)",
                         foreground=DANGER_COLOR
                     )
+                    play_error()
                     self.pin = ""
                     for dot in self.dot_list:
                         dot.config(text='〇', font=('Arial', 30), foreground="blue")
@@ -379,6 +395,7 @@ class LoginPage(ttk.Frame):
                     usr.blocked = True
                     usr.update_db()
                     self.error_label.config(text="❌ Card is blocked (Max tries exceeded)", foreground=DANGER_COLOR)
+                    play_error()
                     self.pin = ""
                     for dot in self.dot_list:
                         dot.config(text='〇', font=('Arial', 31), foreground="blue")
@@ -540,9 +557,11 @@ class DepositPage(ttk.Frame):
             amount_val = int(self.amount.get())
             if amount_val <= 0 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang.get('invalid_amount')}", foreground=DANGER_COLOR)
+                play_error()
                 return
         except ValueError:
             self.result_label.config(text=f"❌ {lang.get('invalid_amount_format')}", foreground=DANGER_COLOR)
+            play_error()
             return
 
         from transaction import BankAccount
@@ -626,8 +645,6 @@ class WithdrawPage(ttk.Frame):
             self.balance_label.config(text=f"{lang['amount']}: ${user.balance}")
 
     def withdraw_action(self):
-        from transaction import BankAccount
-        play_withdraw()
         user = self.controller.current_user
         lang = LANGUAGES[self.controller.language]
 
@@ -636,18 +653,19 @@ class WithdrawPage(ttk.Frame):
             amount = int(self.amount.get())
             if amount <= 0 or zeroch[0] == '0':
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
+                play_error()
                 return
         except ValueError:
             self.result_label.config(text=f"❌ {lang['invalid_amount_format']}", foreground=DANGER_COLOR)
+            play_error()
             return
 
-        result = user.withdraw(amount)
+        user.withdraw(amount)
         self.amount.delete(0, tk.END)
 
+        play_withdraw()
 
         play_success()
-
-
         self.controller.show_frame("LoadingPage")
         self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
 
@@ -685,9 +703,9 @@ class TransferPage(ttk.Frame):
         self.receiver_status = ttk.Label(self, text="")
         self.receiver_status.grid(row=6, column=1, columnspan=2, padx=10, sticky="w")
 
-        self.transfer_button = ttk.Button(self, text="", command=self.transfer_action, style='Primary.TButton')
+        self.transfer_button = ttk.Button(self, text="", command=self.transfer_action, style='Danger.TButton')
         self.transfer_button.grid(row=7, column=0, columnspan=4, pady=30, padx=20, sticky="ew")
-        self.transfer_button.config(state="disabled")
+
 
         self.result_label = ttk.Label(self, text="")
         self.result_label.grid(row=8, column=0, columnspan=4, sticky="n")
@@ -722,7 +740,7 @@ class TransferPage(ttk.Frame):
         self.receiver_status.config(text="")
         self.recvr_var.set("")
         self.trsmoney.delete(0, tk.END)
-        self.transfer_button.config(state="disabled")
+        self.transfer_button.config(command= lambda: None)
 
     def show_balance_func(self):
         user = self.controller.current_user
@@ -732,13 +750,13 @@ class TransferPage(ttk.Frame):
 
     def check_receiver(self, *args):
         from transaction import BankAccount
-        recvr = self.recvr_var.get().capitalize()
+        recvr = self.recvr_var.get()
         lang = LANGUAGES[self.controller.language]
         user = self.controller.current_user
 
         if recvr == "":
             self.receiver_status.config(text="")
-            self.transfer_button.config(state="disabled")
+            self.transfer_button.config(command= lambda: None,style='Danger.TButton')
             return
 
         receiver = BankAccount.get_user(recvr)
@@ -746,42 +764,46 @@ class TransferPage(ttk.Frame):
 
         if not receiver:
             self.receiver_status.config(text=f"✗ {lang['user_not_found']}", foreground=DANGER_COLOR)
-            self.transfer_button.config(state="disabled")
+            self.transfer_button.config(command= lambda: None,style='Danger.TButton')
         elif receiver.username == current_username:
             self.receiver_status.config(text=f"✗ {lang['cannot_transfer_self']}", foreground=DANGER_COLOR)
-            self.transfer_button.config(state="disabled")
+            self.transfer_button.config(command= lambda: None,style='Danger.TButton')
         else:
             self.receiver_status.config(text="✓ User found", foreground=SUCCESS_COLOR)
-            self.transfer_button.config(state="normal")
+            self.transfer_button.config(state="normal", style='Primary.TButton', command=self.transfer_action)
 
     def transfer_action(self):
         from transaction import BankAccount
         user = self.controller.current_user
         lang = LANGUAGES[self.controller.language]
-        receiver_name = self.recvr.get().capitalize()
+        receiver_name = self.recvr.get()
         receiver = BankAccount.get_user(receiver_name)
 
         try:
             zeroch = str(self.trsmoney.get())
             amount = float(self.trsmoney.get())
-            if amount <= 0 or len(str(amount).split('.')[1]) > 2 or zeroch[0] == '0':
+            if amount <= 0 or len(str(amount).split('.')[1]) > 2 or (zeroch[0] == '0' and zeroch[1] != '.'):
                 self.result_label.config(text=f"❌ {lang['invalid_amount']}", foreground=DANGER_COLOR)
+                play_error()
                 return
             else:
                 play_success()
+                self.controller.show_frame("LoadingPage")
+                self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
         except ValueError:
             self.result_label.config(text=f"❌ {lang['invalid_amount_format']}", foreground=DANGER_COLOR)
+            play_error()
             return
 
         if not receiver or receiver.username == user.username:
             self.result_label.config(text=f"❌ {lang['transfer_invalid']}", foreground=DANGER_COLOR)
+            play_error()
             return
 
         user.transfer(receiver, amount)
 
 
-        self.controller.show_frame("LoadingPage")
-        self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
+
 
 class HistoryPage(ttk.Frame):
     def __init__(self, parent, controller):
