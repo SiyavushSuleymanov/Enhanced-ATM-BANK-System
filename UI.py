@@ -241,10 +241,10 @@ class LoginPage(ttk.Frame):
         self.username_label = ttk.Label(self, text="Username :", font=("Segoe UI", 20, "bold"))
         self.username_label.grid(row=3, column=2, columnspan=2, sticky="e", padx=10, pady=20)
 
-        self.usr = ttk.Entry(self, style='TEntry', font=("Helvetica", 16, "bold"))
-        self.usr.focus_set()
-        self.usr.grid(row=3, column=5, columnspan=3, sticky="w", padx=10, pady=20)
-        self.usr.bind("<Return>", self.enterr)
+        self.usir = ttk.Entry(self, style='TEntry', font=("Helvetica", 16, "bold"))
+        self.usir.focus_set()
+        self.usir.grid(row=3, column=5, columnspan=3, sticky="w", padx=10, pady=20)
+        self.usir.bind("<Return>", self.enterr)
 
         self.pin_label = ttk.Label(self, text="PIN :", font=("Segoe UI", 18, "bold"))
         self.pin_label.grid(row=6, column=1, columnspan=4, sticky="e", padx=7, pady=20)
@@ -274,19 +274,19 @@ class LoginPage(ttk.Frame):
 
     def enterr(self, k):
         self.error_label.config(text="")
-        usr_input = self.usr.get()
-        usr = BankAccount.get_user(usr_input)
-        if not usr:
+        usr_input = self.usir.get()
+        self.usr = BankAccount.get_user(usr_input)
+        if not self.usr:
             self.error_label.config(text="❌ User not found", foreground=DANGER_COLOR)
             play_error()
-            self.usr.config(state="normal")
+            self.usir.config(state="normal")
             self.pin = ""
             return
-        if self.usr['state'] == 'normal':
-            self.usr.config(state='disabled')
-        elif self.usr['state'] == 'disabled':
-            self.usr.config(state='normal')
-        usr.wrong_tries = 0
+        if self.usir['state'] == 'normal':
+            self.usir.config(state='disabled')
+        elif self.usir['state'] == 'disabled':
+            self.usir.config(state='normal')
+        self.usr.wrong_tries = 0
         self.pin = ""
         for dot in self.dot_list:
             dot.config(text='〇', font=('Arial', 30), foreground="blue")
@@ -304,9 +304,7 @@ class LoginPage(ttk.Frame):
         self.register_button.config(text=lang['register'])
 
     def pressed(self, ent_digit):
-        usr_input = self.usr.get()
-        usr = BankAccount.get_user(usr_input)
-        if usr.blocked == False:
+        if self.usr.blocked == False:
             play_click()
             self.error_label.config(text="")
             if ent_digit.keysym.isdigit() and len(self.pin) <= self.pin_len:
@@ -344,10 +342,10 @@ class LoginPage(ttk.Frame):
         webbrowser.open(url)
 
     def login_user(self, k=0):
-        self.usr.config(state="active")
+        self.usir.config(state="active")
 
 
-        usr_input = self.usr.get()
+        usr_input = self.usir.get()
         self.error_label.config(text="")
         usr = BankAccount.get_user(usr_input)
         if not usr:
@@ -376,7 +374,7 @@ class LoginPage(ttk.Frame):
                 self.focus_set()
                 usr.update_db()
                 self.controller.current_user = usr
-                self.usr.delete(0, tk.END)
+                self.usir.delete(0, tk.END)
                 self.controller.show_frame("LoadingPage")
                 self.controller.after(1500, lambda: self.controller.show_frame("MainMenu"))
             else:
