@@ -252,7 +252,7 @@ class LoginPage(ttk.Frame):
 
         self.register_button = ttk.Button(self, text="Register", command=self.open_register_page,
                                           style='Secondary.TButton')
-        self.register_button.grid(row=6, column=3, columnspan=4, pady=40, sticky="ew")
+        self.register_button.grid(row=7, column=3, columnspan=4, pady=40, sticky="ew")
 
         self.error_label = ttk.Label(self, text="", foreground=DANGER_COLOR, background="white")
         self.error_label.grid(row=6, column=2, columnspan=6, pady=5, sticky="n")
@@ -273,6 +273,11 @@ class LoginPage(ttk.Frame):
     def enterr(self, k):
         usr_input = self.usr.get().capitalize()
         usr = BankAccount.get_user(usr_input)
+        if not usr:
+            self.error_label.config(text="❌ User not found", foreground=DANGER_COLOR)
+            self.usr.config(state="normal")
+            self.pin = ""
+            return
         if self.usr['state'] == 'normal':
             self.usr.config(state='disabled')
         elif self.usr['state'] == 'disabled':
