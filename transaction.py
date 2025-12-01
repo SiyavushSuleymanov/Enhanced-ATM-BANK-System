@@ -1,11 +1,19 @@
 from datetime import datetime
 from supabase import create_client
 
+"""A module for managing bank account transactions using Supabase as the backend.
+    All datas are stored in Supabase database.(online postgresql database)"""
+
 url = "https://zumeulejkljiokmfhcrk.supabase.co"
 key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bWV1bGVqa2xqaW9rbWZoY3JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMzAwNjIsImV4cCI6MjA3OTcwNjA2Mn0.oWXWPZT_aOefrnLQ4oaTFFgvI3MLHEo2MocrF492QZE"
 supabase = create_client(url, key)
+"""this part is for connecting to supabase database. You need url and anon key for this connection."""
+
 
 class BankAccount:
+    """A class representing a bank account with methods for deposit, withdrawal, and transfer.
+           self.attributes: (declared all of them in __init__ method)
+    """
     def __init__(self, username, pin, balance, transactions, blocked=False,wrong_tries=0):
         self.username = username
         self.pin = pin
@@ -23,6 +31,9 @@ class BankAccount:
         return None
 
     def update_balance(self):
+        """After each transaction, we need to update balance in our database.
+                   This method updates the balance and transactions in the Supabase database.
+                   """
         supabase.table("users").update({
             "balance": self.balance,
             "transactions": self.transactions,
@@ -30,6 +41,9 @@ class BankAccount:
         }).eq("name", self.username).execute()
 
     def deposit(self, amount):
+        """Deposit money into the account.
+                    Adding float conversion to ensure two decimal places for balance.
+                    After transaction, we call agaiin update_balance method for updating balance in database."""
         self.balance += amount
         self.balance = float(f"{self.balance:.2f}")
         self.transactions.append(
@@ -40,6 +54,10 @@ class BankAccount:
         return f"Deposit successful! Balance: {self.balance} AZN"
 
     def withdraw(self, amount):
+        """Withdraw money from the account.
+                   Adding float conversion to ensure two decimal places for balance.
+                   After transaction, we call agaiin update_balance method for updating balance in database.
+                   Main point is checking if there is enough balance for withdrawal."""
         if amount > self.balance:
             return "Insufficient funds!"
         self.balance -= amount
@@ -51,6 +69,11 @@ class BankAccount:
         return f"Withdraw successful! Current balance: {self.balance} AZN"
 
     def transfer(self, receiver, amount):
+        """Transfer money to another account.
+                    Receiver can be either a username (str) or a BankAccount object.
+                    Adding float conversion to ensure two decimal places for balance.
+                    After transaction, we call agaiin update_balance method for updating balance in database.
+                    Also, we return timestamp for transaction recording for history"""
         if isinstance(receiver, str):
             receiver_obj = BankAccount.get_user(receiver)
         else:
@@ -83,6 +106,8 @@ class BankAccount:
         return "Transfer successful!"
 
     def update_db(self):
+        """for updating all attributes of user in database.
+                """
         from supabase import create_client
         url = "https://zumeulejkljiokmfhcrk.supabase.co"
         key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bWV1bGVqa2xqaW9rbWZoY3JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMzAwNjIsImV4cCI6MjA3OTcwNjA2Mn0.oWXWPZT_aOefrnLQ4oaTFFgvI3MLHEo2MocrF492QZE"
