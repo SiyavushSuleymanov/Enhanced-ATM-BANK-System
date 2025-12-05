@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Registration Page</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-image: url("https://upload.wikimedia.org/wikipedia/commons/a/a1/UFAZ.jpg");
+    background-size: cover;      
+    background-position: center; 
+    background-repeat: no-repeat;
+    
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.container {
+    background: #fff; 
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #153ba5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #1b2394;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Registration</h2>
+    <p style="text-align:center; color:#555; margin-top:-10px;">
+        Please, choose a PIN containing only 4 digits
+    </p>
+
+    <form id="registration-form">
+        <input type="text" name="username" placeholder="Username" required />
+
+        <!-- PIN restricted to 4 digits -->
+        <input 
+            type="password" 
+            name="pin" 
+            placeholder="PIN Code" 
+            required
+            maxlength="4"
+            pattern="\d{4}"
+            inputmode="numeric"
+        />
+
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = "https://zumeulejkljiokmfhcrk.supabase.co";
+    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bWV1bGVqa2xqaW9rbWZoY3JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMzAwNjIsImV4cCI6MjA3OTcwNjA2Mn0.oWXWPZT_aOefrnLQ4oaTFFgvI3MLHEo2MocrF492QZE";
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    const form = document.getElementById("registration-form");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const username = form.username.value.trim();
+        const pin = form.pin.value.trim();
+
+        // 🔒 Validate PIN: must be exactly 4 digits
+        if (!/^\d{4}$/.test(pin)) {
+            alert("PIN must be exactly 4 digits!");
+            return;
+        }
+
+        // 🔍 Check if username already exists
+        const { data: exists } = await supabase
+            .from("users")
+            .select("name")
+            .eq("name", username)
+            .maybeSingle();
+
+        if (exists) {
+            alert("This username already exists!");
+            return;
+        }
+
+        // ➕ Insert new user
+        const { data, error } = await supabase.from("users").insert([
+            {
+                name: username,
+                pin: pin,
+                balance: 0,
+                transactions: [],
+                blocked: false,
+                wrong_tries: 0,
+            },
+        ]);
+
+        if (error) {
+            console.error(error);
+            alert("Error: " + error.message);
+            return;
+        }
+
+        alert("Registration successful!");
+        form.reset();
+    });
+</script>
+</body>
+</html>
