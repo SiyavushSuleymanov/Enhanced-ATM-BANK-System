@@ -92,13 +92,13 @@ button:hover {
         const username = form.username.value.trim();
         const pin = form.pin.value.trim();
 
-        // 🔒 Validate PIN: must be exactly 4 digits
+        
         if (!/^\d{4}$/.test(pin)) {
             alert("PIN must be exactly 4 digits!");
             return;
         }
 
-        // 🔍 Check if username already exists
+        
         const { data: exists } = await supabase
             .from("users")
             .select("name")
@@ -110,7 +110,7 @@ button:hover {
             return;
         }
 
-        // ➕ Insert new user
+        
         const { data, error } = await supabase.from("users").insert([
             {
                 name: username,
